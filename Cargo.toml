@@ -6,4 +6,7 @@ readme = "README>md"
 license = "BSD-2-Clause"
 
 [dependencies]
+chrono = "~0.2"
+mersenne_twister = "~0.3"
 nalgebra = "~0.10"
+rand = "~0.3"
