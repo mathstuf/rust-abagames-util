@@ -8,7 +8,9 @@ extern crate nalgebra;
 mod math;
 mod rand;
 mod paths;
+mod sdl;
 
 pub use math::*;
 pub use rand::*;
 pub use paths::*;
+pub use sdl::*;
