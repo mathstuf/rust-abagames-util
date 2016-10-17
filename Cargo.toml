@@ -7,6 +7,9 @@ license = "BSD-2-Clause"
 
 [dependencies]
 chrono = "~0.2"
+draw_state = "~0.6"
+gfx = "~0.12"
+gfx_core = "~0.4"
 gfx_device_gl = "~0.11"
 gfx_window_sdl = "~0.3"
 mersenne_twister = "~0.3"
