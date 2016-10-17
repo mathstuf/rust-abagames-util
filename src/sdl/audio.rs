@@ -10,8 +10,10 @@ use self::sdl2_mixer::{AudioFormat, Channel, Chunk, Music, Sdl2MixerContext};
 use super::super::paths::Paths;
 
 use std::collections::hash_map::HashMap;
+use std::collections::hash_set::HashSet;
 use std::error::Error;
 use std::fs;
+use std::mem;
 use std::path::PathBuf;
 
 pub struct AudioData {
@@ -21,6 +23,7 @@ pub struct AudioData {
     music: HashMap<String, Music>,
 
     sfx: HashMap<String, (Chunk, Channel)>,
+    queued_sfx: HashSet<&'static str>,
 }
 
 impl AudioData {
@@ -44,6 +47,7 @@ impl AudioData {
             music: music,
 
             sfx: HashMap::new(),
+            queued_sfx: HashSet::new(),
         })
     }
 
@@ -54,6 +58,31 @@ impl AudioData {
         self.sfx.insert(name.to_string(), (chunk, sdl2_mixer::channel(channel)));
 
         Ok(())
+    }
+
+    fn play_music(&self, name: &str, count: isize) -> bool {
+        self.music
+            .get(name)
+            .map(|music| music.play(count))
+            .is_some()
+    }
+
+    fn mark_sfx(&mut self, name: &'static str) -> bool {
+        self.queued_sfx.insert(name)
+    }
+
+    fn play_sfx(&mut self) -> bool {
+        let sfx_to_play = mem::replace(&mut self.queued_sfx, HashSet::new());
+
+        sfx_to_play.iter()
+            .map(|&name| {
+                self.sfx.get(name)
+                    .map(|&(ref sfx, channel)| {
+                        channel.play(&sfx, 0)
+                    })
+                    .is_some()
+            })
+            .all(|b| b)
     }
 }
 
@@ -66,6 +95,8 @@ static FREQUENCY: isize = 44100;
 static FORMAT: AudioFormat = sdl2_mixer::AUDIO_S16;
 static CHANNELS: isize = 1;
 static BUFFERS: isize = 4096;
+static PLAY_UNLIMITED: isize = -1;
+static FADE_OUT_TIME: isize = 1280;
 
 impl Audio {
     pub fn new(sdl_context: &Sdl, enable: bool) -> Result<Self, Box<Error>> {
@@ -95,5 +126,33 @@ impl Audio {
         }
 
         Ok(self)
+    }
+
+    pub fn play_music(&self, name: &str) -> bool {
+        match *self {
+            Audio::Disabled => true,
+            Audio::Enabled(ref data) => data.play_music(name, PLAY_UNLIMITED),
+        }
+    }
+
+    pub fn play_music_once(&self, name: &str) -> bool {
+        match *self {
+            Audio::Disabled => true,
+            Audio::Enabled(ref data) => data.play_music(name, 1),
+        }
+    }
+
+    pub fn mark_sfx(&mut self, name: &'static str) -> bool {
+        match *self {
+            Audio::Disabled => true,
+            Audio::Enabled(ref mut data) => data.mark_sfx(name),
+        }
+    }
+
+    pub fn play_sfx(&mut self) -> bool {
+        match *self {
+            Audio::Disabled => true,
+            Audio::Enabled(ref mut data) => data.play_sfx(),
+        }
     }
 }
