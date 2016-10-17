@@ -88,7 +88,7 @@ impl AudioData {
 
 pub enum Audio {
     Disabled,
-    Enabled(AudioData),
+    Enabled(AudioData, bool),
 }
 
 static FREQUENCY: isize = 44100;
@@ -113,11 +113,11 @@ impl Audio {
         let asset_dir = try!(Paths::new()).asset_dir;
         let data = try!(AudioData::new(context, asset_dir));
 
-        Ok(Audio::Enabled(data))
+        Ok(Audio::Enabled(data, true))
     }
 
     pub fn load_sfx(&mut self, sfx: &[(&str, isize)]) -> Result<&mut Self, Box<Error>> {
-        if let Audio::Enabled(ref mut data) = *self {
+        if let Audio::Enabled(ref mut data, _) = *self {
             try!(sfx.iter()
                 .map(|&(ref name, channel)| {
                     data.load_sfx(name, channel)
@@ -131,28 +131,39 @@ impl Audio {
     pub fn play_music(&self, name: &str) -> bool {
         match *self {
             Audio::Disabled => true,
-            Audio::Enabled(ref data) => data.play_music(name, PLAY_UNLIMITED),
+            Audio::Enabled(ref data, _) => data.play_music(name, PLAY_UNLIMITED),
         }
     }
 
     pub fn play_music_once(&self, name: &str) -> bool {
         match *self {
             Audio::Disabled => true,
-            Audio::Enabled(ref data) => data.play_music(name, 1),
+            Audio::Enabled(ref data, _) => data.play_music(name, 1),
         }
+    }
+
+    pub fn set_sfx_enabled(&mut self, enabled: bool) -> &mut Self {
+        match *self {
+            Audio::Enabled(_, ref mut sfx_enabled) => *sfx_enabled = enabled,
+            _ => (),
+        }
+
+        self
     }
 
     pub fn mark_sfx(&mut self, name: &'static str) -> bool {
         match *self {
             Audio::Disabled => true,
-            Audio::Enabled(ref mut data) => data.mark_sfx(name),
+            Audio::Enabled(_, false) => true,
+            Audio::Enabled(ref mut data, _) => data.mark_sfx(name),
         }
     }
 
     pub fn play_sfx(&mut self) -> bool {
         match *self {
             Audio::Disabled => true,
-            Audio::Enabled(ref mut data) => data.play_sfx(),
+            Audio::Enabled(_, false) => true,
+            Audio::Enabled(ref mut data, _) => data.play_sfx(),
         }
     }
 }
