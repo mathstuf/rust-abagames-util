@@ -20,11 +20,11 @@ pub struct MainLoop {
     timer: TimerSubsystem,
 }
 
-static INTERVAL_BASE: f32 = 16f32;
+static INTERVAL_BASE: f32 = 16.;
 static MAX_SKIP_FRAME: i32 = 5;
 static NO_WAIT: bool = false;
 static ACCELERATE_FRAME: bool = false;
-static SLOWDOWN_START_RATIO: f32 = 1f32;
+static SLOWDOWN_START_RATIO: f32 = 1.;
 static SLOWDOWN_MAX_RATIO: f32 = 1.75;
 
 impl MainLoop {

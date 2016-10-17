@@ -46,7 +46,7 @@ impl Rand {
     }
 
     fn next_real(&self) -> f32 {
-        ((self.next_u32() as f64) * (1f64 / 4294967295f64)) as f32
+        ((self.next_u32() as f64) * (1. / 4294967295.)) as f32
     }
 
     pub fn next_float(&self, n: f32) -> f32 {
@@ -54,6 +54,6 @@ impl Rand {
     }
 
     pub fn next_float_signed(&self, n: f32) -> f32 {
-        self.next_real() % (2f32 * n) - n
+        self.next_real() % (2. * n) - n
     }
 }

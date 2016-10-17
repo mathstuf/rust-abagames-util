@@ -6,7 +6,7 @@ use self::nalgebra::Vector2;
 
 use std::f32::consts::PI;
 
-static PI_2: f32 = 2f32 * PI;
+static PI_2: f32 = 2. * PI;
 
 fn normalize(mut rot: f32, half: f32, full: f32) -> f32 {
     if rot < -half {
@@ -22,7 +22,7 @@ pub fn normalize_radians(rad: f32) -> f32 {
 }
 
 pub fn normalize_degrees(deg: f32) -> f32 {
-    normalize(deg, 180f32, 360f32)
+    normalize(deg, 180., 360.)
 }
 
 pub fn fast_distance(v1: &Vector2<f32>, v2: &Vector2<f32>) -> f32 {
@@ -30,9 +30,9 @@ pub fn fast_distance(v1: &Vector2<f32>, v2: &Vector2<f32>) -> f32 {
     let ay = (v1.y - v2.y).abs();
 
     if ax < ay {
-        ay + ax / 2f32
+        ay + ax / 2.
     } else {
-        ax + ay / 2f32
+        ax + ay / 2.
     }
 }
 
@@ -57,21 +57,21 @@ mod test {
 
     use std::f32::consts::PI;
 
-    static PI_2: f32 = 2f32 * PI;
+    static PI_2: f32 = 2. * PI;
 
     use super::*;
 
     #[test]
     fn test_normalize_radians() {
-        assert_approx_eq_eps!(normalize_radians(1f32), 1f32, 1e-6);
-        assert_approx_eq_eps!(normalize_radians(PI_2), 0f32, 1e-6);
-        assert_approx_eq_eps!(normalize_radians(-3f32 * PI), -PI, 1e-6);
+        assert_approx_eq_eps!(normalize_radians(1.), 1., 1e-6);
+        assert_approx_eq_eps!(normalize_radians(PI_2), 0., 1e-6);
+        assert_approx_eq_eps!(normalize_radians(-3. * PI), -PI, 1e-6);
     }
 
     #[test]
     fn test_normalize_degrees() {
-        assert_approx_eq_eps!(normalize_degrees(45f32), 45f32, 1e-6);
-        assert_approx_eq_eps!(normalize_degrees(360f32), 0f32, 1e-6);
-        assert_approx_eq_eps!(normalize_degrees(-540f32), -180f32, 1e-6);
+        assert_approx_eq_eps!(normalize_degrees(45.), 45., 1e-6);
+        assert_approx_eq_eps!(normalize_degrees(360.), 0., 1e-6);
+        assert_approx_eq_eps!(normalize_degrees(-540.), -180., 1e-6);
     }
 }

@@ -44,8 +44,8 @@ pub struct Video {
 }
 
 static NEAR_PLANE: f32 = 0.1;
-static FAR_PLANE: f32 = 1000f32;
-static CLEAR_COLOR: [f32; 4] = [0f32, 0f32, 0f32, 0f32];
+static FAR_PLANE: f32 = 1000.;
+static CLEAR_COLOR: [f32; 4] = [0.; 4];
 
 impl Video {
     pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool) -> Result<Self, Box<Error>> {
@@ -83,7 +83,7 @@ impl Video {
         let (width, height) = window.size();
 
         let aspect = (height as f32) / (width as f32);
-        let fovy = ((height as f32) / (2f32 * FAR_PLANE)).atan() * 2f32;
+        let fovy = ((height as f32) / (2. * FAR_PLANE)).atan() * 2.;
 
         let matrix = Perspective3::new(aspect, fovy, NEAR_PLANE, FAR_PLANE)
             .to_perspective_matrix();
@@ -102,7 +102,7 @@ impl Video {
 
     pub fn resize(&mut self, width: u32, height: u32) {
         let aspect = (height as f32) / (width as f32);
-        let fovy = ((height as f32) / (2f32 * FAR_PLANE)).atan() * 2f32;
+        let fovy = ((height as f32) / (2. * FAR_PLANE)).atan() * 2.;
 
         self.perspective_matrix.set_aspect(aspect);
         self.perspective_matrix.set_fovy(fovy);
@@ -130,7 +130,7 @@ impl Video {
             .into();
 
         encoder.clear(&mut self.view, CLEAR_COLOR);
-        encoder.clear_depth(&mut self.depth_stencil_view, 0f32);
+        encoder.clear_depth(&mut self.depth_stencil_view, 0.);
         encoder.clear_stencil(&mut self.depth_stencil_view, 0);
 
         render(&mut encoder);
