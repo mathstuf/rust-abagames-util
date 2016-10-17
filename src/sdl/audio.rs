@@ -166,4 +166,16 @@ impl Audio {
             Audio::Enabled(ref mut data, _) => data.play_sfx(),
         }
     }
+
+    pub fn fade(&self) {
+        if let Audio::Enabled(_, _) = *self {
+            Music::fade_out(FADE_OUT_TIME).unwrap()
+        }
+    }
+
+    pub fn halt(&self) {
+        if let Audio::Enabled(_, _) = *self {
+            Music::halt()
+        }
+    }
 }
