@@ -7,13 +7,16 @@ use self::sdl2::Sdl;
 use std::error::Error;
 
 mod audio;
+mod mainloop;
 
 pub use self::audio::*;
+pub use self::mainloop::*;
 
 pub struct SdlInfo {
     _sdl: Sdl,
 
     pub audio: Audio,
+    pub mainloop: MainLoop,
 }
 
 pub struct SdlBuilder {
@@ -36,11 +39,13 @@ impl SdlBuilder {
         let sdl_context = try!(sdl2::init());
 
         let audio = try!(Audio::new(&sdl_context, self.audio));
+        let mainloop = try!(MainLoop::new(&sdl_context));
 
         Ok(SdlInfo {
             _sdl: sdl_context,
 
             audio: audio,
+            mainloop: mainloop,
         })
     }
 }
