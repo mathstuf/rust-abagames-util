@@ -13,8 +13,8 @@ pub struct Paths {
 }
 
 impl Paths {
-    pub fn new() -> io::Result<Self> {
-        let (base_dir, is_install) = try!(Self::base_path_dir());
+    pub fn new<P: AsRef<Path>>(source_path: P) -> io::Result<Self> {
+        let (base_dir, is_install) = try!(Self::base_path_dir(source_path.as_ref()));
 
         if is_install {
             Self::from_install(base_dir)
@@ -100,7 +100,7 @@ impl Paths {
         share_dir
     }
 
-    fn base_path_dir() -> io::Result<(PathBuf, bool)> {
+    fn base_path_dir(source_path: &Path) -> io::Result<(PathBuf, bool)> {
         let mut exe_path = try!(env::current_exe());
 
         exe_path.pop(); // build config (build) or bin (install)
@@ -111,7 +111,7 @@ impl Paths {
 
             Ok((exe_path, true))
         } else {
-            Ok((env!("CARGO_MANIFEST_DIR").into(), false))
+            Ok((source_path.to_path_buf(), false))
         }
     }
 }
