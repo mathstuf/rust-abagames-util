@@ -42,7 +42,7 @@ impl<'a> MainLoop<'a> {
 
         try!(game.init());
 
-        for event in pump.poll_iter() {
+        for event in pump.wait_iter() {
             try!(game.handle_event(&event));
 
             let is_done = if let &Event::Quit{..} = &event {
