@@ -54,8 +54,10 @@ impl<'a> Video<'a> {
     pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool) -> Result<Self, Box<Error>> {
         let video = try!(sdl_context.video());
 
-        video.gl_attr()
-            .set_context_profile(GLProfile::GLES);
+        let gl_attr = video.gl_attr();
+        gl_attr.set_context_profile(GLProfile::Core);
+        gl_attr.set_context_flags().debug().set();
+        gl_attr.set_context_version(3, 2);
         try!(video.gl_load_library_default());
 
         let &(width, height) = size;
