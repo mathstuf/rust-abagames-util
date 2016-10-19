@@ -29,10 +29,11 @@ use self::sdl2::hint;
 use self::sdl2::video::{GLContext, GLProfile, Window};
 
 use std::error::Error;
+use std::marker::PhantomData;
 
 pub type ObjectEncoder = Encoder<Resources, GLCommandBuffer>;
 
-pub struct Video {
+pub struct Video<'a> {
     window: Window,
     _gl_context: GLContext,
     device: GLDevice,
@@ -41,13 +42,15 @@ pub struct Video {
     depth_stencil_view: DepthStencilView<Resources, DepthStencil>,
 
     perspective_matrix: PerspectiveMatrix3<f32>,
+
+    _phantom: PhantomData<&'a str>,
 }
 
 static NEAR_PLANE: f32 = 0.1;
 static FAR_PLANE: f32 = 1000.;
 static CLEAR_COLOR: [f32; 4] = [0.; 4];
 
-impl Video {
+impl<'a> Video<'a> {
     pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool) -> Result<Self, Box<Error>> {
         let video = try!(sdl_context.video());
 
@@ -97,6 +100,8 @@ impl Video {
             factory: factory,
             view: view,
             depth_stencil_view: depth_stencil_view,
+
+            _phantom: PhantomData,
         })
     }
 
