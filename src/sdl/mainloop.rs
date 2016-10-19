@@ -8,11 +8,11 @@ pub use self::sdl2::event::Event;
 use std::error::Error;
 
 pub trait Game {
-    fn init(&mut self);
-    fn handle_event(&mut self, event: &Event) -> f32;
-    fn step_frame(&mut self) -> f32;
-    fn draw(&mut self);
-    fn quit(&mut self);
+    fn init(&mut self) -> Result<(), Box<Error>>;
+    fn handle_event(&mut self, event: &Event) -> Result<(), Box<Error>>;
+    fn step_frame(&mut self) -> Result<f32, Box<Error>>;
+    fn draw(&mut self) -> Result<(), Box<Error>>;
+    fn quit(&mut self) -> Result<(), Box<Error>>;
 }
 
 pub struct MainLoop<'a> {
@@ -33,17 +33,17 @@ impl<'a> MainLoop<'a> {
         }
     }
 
-    pub fn run(&mut self, game: &mut Game) {
-        let mut pump = self.sdl_context.event_pump().unwrap();
-        let mut timer = self.sdl_context.timer().unwrap();
+    pub fn run<G: Game>(&self, mut game: G) -> Result<(), Box<Error>> {
+        let mut pump = try!(self.sdl_context.event_pump());
+        let mut timer = try!(self.sdl_context.timer());
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
 
-        game.init();
+        try!(game.init());
 
         for event in pump.poll_iter() {
-            game.handle_event(&event);
+            try!(game.handle_event(&event));
 
             let is_done = if let &Event::Quit{..} = &event {
                 true
@@ -75,11 +75,13 @@ impl<'a> MainLoop<'a> {
                 frame
             };
 
-            let slowdown: f32 = [0..frames].iter()
+            let slowdown: f32 = try!([0..frames].iter()
                 .map(|_| game.step_frame())
+                .collect::<Result<Vec<_>, _>>())
+                .iter()
                 .sum();
 
-            game.draw();
+            try!(game.draw());
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
@@ -89,6 +91,10 @@ impl<'a> MainLoop<'a> {
                 break;
             }
         }
+
+        try!(game.quit());
+
+        Ok(())
     }
 
     fn calculate_interval(interval: f32, slowdown: f32) -> f32 {
