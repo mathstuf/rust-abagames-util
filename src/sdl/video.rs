@@ -20,8 +20,8 @@ use self::gfx_device_gl::{Factory, Resources};
 
 extern crate gfx_window_sdl;
 
-extern crate nalgebra;
-use self::nalgebra::{Matrix4, Perspective3, PerspectiveMatrix3};
+extern crate cgmath;
+use self::cgmath::Matrix4;
 
 extern crate sdl2;
 use self::sdl2::Sdl;
@@ -41,7 +41,7 @@ pub struct Video<'a> {
     view: RenderTargetView<Resources, Srgba8>,
     depth_stencil_view: DepthStencilView<Resources, DepthStencil>,
 
-    perspective_matrix: PerspectiveMatrix3<f32>,
+    matrix: Matrix4<f32>,
 
     _phantom: PhantomData<&'a str>,
 }
@@ -87,14 +87,8 @@ impl<'a> Video<'a> {
 
         let (width, height) = window.size();
 
-        let aspect = (height as f32) / (width as f32);
-        let fovy = ((height as f32) / (2. * FAR_PLANE)).atan() * 2.;
-
-        let matrix = Perspective3::new(aspect, fovy, NEAR_PLANE, FAR_PLANE)
-            .to_perspective_matrix();
-
         Ok(Video {
-            perspective_matrix: matrix,
+            matrix: Self::perspective_matrix(width, height),
 
             window: window,
             _gl_context: gl_context,
@@ -107,16 +101,19 @@ impl<'a> Video<'a> {
         })
     }
 
-    pub fn resize(&mut self, width: u32, height: u32) {
+    fn perspective_matrix(width: u32, height: u32) -> Matrix4<f32> {
         let aspect = (height as f32) / (width as f32);
         let fovy = ((height as f32) / (2. * FAR_PLANE)).atan() * 2.;
 
-        self.perspective_matrix.set_aspect(aspect);
-        self.perspective_matrix.set_fovy(fovy);
+        cgmath::perspective(cgmath::Rad(fovy), aspect, NEAR_PLANE, FAR_PLANE)
     }
 
-    pub fn perspective_matrix(&self) -> &Matrix4<f32> {
-        self.perspective_matrix.as_matrix()
+    pub fn resize(&mut self, width: u32, height: u32) {
+        self.matrix = Self::perspective_matrix(width, height)
+    }
+
+    pub fn matrix(&self) -> &Matrix4<f32> {
+        &self.matrix
     }
 
     pub fn render_with<F>(&mut self, mut render: F)
