@@ -42,13 +42,17 @@ impl<'a> MainLoop<'a> {
 
         try!(game.init());
 
-        for event in pump.wait_iter() {
-            let is_game_done = try!(game.handle_event(&event));
+        loop {
+            let event = pump.poll_event();
 
-            let is_done = if let &Event::Quit{..} = &event {
-                true
+            let is_done = if let Some(event) = event {
+                if let &Event::Quit{..} = &event {
+                    true
+                } else {
+                    try!(game.handle_event(&event))
+                }
             } else {
-                is_game_done
+                false
             };
 
             let now_tick = timer.ticks();
