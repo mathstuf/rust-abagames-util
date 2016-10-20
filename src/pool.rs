@@ -1,6 +1,8 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
+extern crate itertools;
+
 use std::slice::Iter;
 
 pub struct Pool<T> {
@@ -13,8 +15,8 @@ impl<T> Pool<T> {
         where F: Fn() -> T,
     {
         Pool {
-            pool: (0..size)
-                .map(|_| ctor())
+            pool: itertools::repeat_call(ctor)
+                .take(size)
                 .collect(),
             in_use: Vec::with_capacity(size),
         }
