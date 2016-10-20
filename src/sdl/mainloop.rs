@@ -9,7 +9,7 @@ use std::error::Error;
 
 pub trait Game {
     fn init(&mut self) -> Result<(), Box<Error>>;
-    fn handle_event(&mut self, event: &Event) -> Result<(), Box<Error>>;
+    fn handle_event(&mut self, event: &Event) -> Result<bool, Box<Error>>;
     fn step_frame(&mut self) -> Result<f32, Box<Error>>;
     fn draw(&mut self) -> Result<(), Box<Error>>;
     fn quit(&mut self) -> Result<(), Box<Error>>;
@@ -43,12 +43,12 @@ impl<'a> MainLoop<'a> {
         try!(game.init());
 
         for event in pump.wait_iter() {
-            try!(game.handle_event(&event));
+            let is_game_done = try!(game.handle_event(&event));
 
             let is_done = if let &Event::Quit{..} = &event {
                 true
             } else {
-                false
+                is_game_done
             };
 
             let now_tick = timer.ticks();
