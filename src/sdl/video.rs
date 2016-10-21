@@ -105,6 +105,8 @@ impl<'a> Video<'a> {
         try!(renderer.set_logical_size(width, height));
         let window = renderer.into_window().unwrap();
 
+        window.gl_make_current(&gl_context).unwrap();
+
         hint::set("SDL_HINT_RENDER_SCALE_QUALITY", "linear");
 
         sdl_context.mouse().show_cursor(false);
