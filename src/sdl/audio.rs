@@ -82,6 +82,7 @@ impl AudioData {
 
 pub struct Audio<'a> {
     data: AudioData,
+    music_enabled: bool,
     sfx_enabled: bool,
 
     _phantom: PhantomData<&'a str>,
@@ -101,6 +102,7 @@ impl<'a> Audio<'a> {
 
         Ok(Audio {
             data: try!(AudioData::new(asset_dir)),
+            music_enabled: true,
             sfx_enabled: true,
 
             _phantom: PhantomData,
@@ -117,12 +119,26 @@ impl<'a> Audio<'a> {
         Ok(self)
     }
 
+    pub fn set_music_enabled(&mut self, enabled: bool) -> &mut Self {
+        self.music_enabled = enabled;
+
+        self
+    }
+
     pub fn play_music(&self, name: &str) -> bool {
-        self.data.play_music(name, PLAY_UNLIMITED)
+        if self.music_enabled {
+            self.data.play_music(name, PLAY_UNLIMITED)
+        } else {
+            true
+        }
     }
 
     pub fn play_music_once(&self, name: &str) -> bool {
-        self.data.play_music(name, 1)
+        if self.music_enabled {
+            self.data.play_music(name, 1)
+        } else {
+            true
+        }
     }
 
     pub fn set_sfx_enabled(&mut self, enabled: bool) -> &mut Self {
