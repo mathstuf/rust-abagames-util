@@ -1,17 +1,12 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-extern crate draw_state;
-use self::draw_state::target::Rect;
-
 extern crate gfx;
+use self::gfx::Device;
 use self::gfx::Encoder;
-
-extern crate gfx_core;
-use self::gfx_core::Device;
-use self::gfx_core::draw::CommandBuffer;
-use self::gfx_core::format::{DepthStencil, Srgba8};
-use self::gfx_core::handle::{DepthStencilView, RenderTargetView};
+use self::gfx::CommandBuffer;
+use self::gfx::format::{DepthStencil, Srgba8};
+use self::gfx::handle::{DepthStencilView, RenderTargetView};
 
 extern crate gfx_device_gl;
 use self::gfx_device_gl::Device as GLDevice;
