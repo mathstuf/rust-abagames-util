@@ -2,16 +2,12 @@
 // See accompanying file LICENSE for details.
 
 extern crate gfx;
-use self::gfx::Device;
-use self::gfx::Encoder;
-use self::gfx::CommandBuffer;
 use self::gfx::format::{DepthStencil, Srgba8};
 use self::gfx::handle::{DepthStencilView, RenderTargetView};
 
 extern crate gfx_device_gl;
 use self::gfx_device_gl::Device as GLDevice;
 use self::gfx_device_gl::CommandBuffer as GLCommandBuffer;
-use self::gfx_device_gl::{Factory, Resources};
 
 extern crate gfx_window_sdl;
 
@@ -26,7 +22,38 @@ use self::sdl2::video::{GLContext, GLProfile, Window};
 use std::error::Error;
 use std::marker::PhantomData;
 
-pub type ObjectEncoder = Encoder<Resources, GLCommandBuffer>;
+pub use self::gfx_device_gl::{Factory, Resources};
+pub type Encoder = gfx::Encoder<Resources, GLCommandBuffer>;
+
+pub struct EncoderContext<'a, R, C: 'a>
+    where R: gfx::Resources,
+          C: gfx::CommandBuffer<R>,
+{
+    pub matrix: Matrix4<f32>,
+    pub encoder: &'a mut gfx::Encoder<R, C>,
+}
+
+pub struct EncoderDrawContext<'a, R, C: 'a, D: 'a>
+    where R: gfx::Resources,
+          C: gfx::CommandBuffer<R>,
+          D: gfx::Device<Resources=R, CommandBuffer=C>,
+{
+    pub context: EncoderContext<'a, R, C>,
+    device: &'a mut D,
+    window: &'a mut Window,
+}
+
+impl<'a, R, C, D> Drop for EncoderDrawContext<'a, R, C, D>
+    where R: gfx::Resources,
+          C: gfx::CommandBuffer<R>,
+          D: gfx::Device<Resources=R, CommandBuffer=C>,
+{
+    fn drop(&mut self) {
+        self.context.encoder.flush(self.device);
+        self.window.gl_swap_window();
+        self.device.cleanup();
+    }
+}
 
 pub struct Video<'a> {
     window: Window,
@@ -35,6 +62,8 @@ pub struct Video<'a> {
     factory: Factory,
     view: RenderTargetView<Resources, Srgba8>,
     depth_stencil_view: DepthStencilView<Resources, DepthStencil>,
+
+    encoder: Encoder,
 
     matrix: Matrix4<f32>,
 
@@ -69,7 +98,7 @@ impl<'a> Video<'a> {
             window.fullscreen_desktop();
         }
 
-        let (window, gl_context, device, factory, view, depth_stencil_view) =
+        let (window, gl_context, device, mut factory, view, depth_stencil_view) =
             gfx_window_sdl::init(&mut window);
 
         let mut renderer = try!(window.renderer().build());
@@ -82,6 +111,8 @@ impl<'a> Video<'a> {
 
         let (width, height) = window.size();
 
+        let encoder = factory.create_command_buffer().into();
+
         Ok(Video {
             matrix: Self::perspective_matrix(width, height),
 
@@ -91,6 +122,8 @@ impl<'a> Video<'a> {
             factory: factory,
             view: view,
             depth_stencil_view: depth_stencil_view,
+
+            encoder: encoder,
 
             _phantom: PhantomData,
         })
@@ -111,31 +144,22 @@ impl<'a> Video<'a> {
         &self.matrix
     }
 
-    pub fn render_with<F>(&mut self, mut render: F)
-        where F: FnMut(&mut ObjectEncoder),
-    {
-        let mut buffer = self.factory.create_command_buffer();
+    pub fn factory(&mut self) -> (&mut Factory, &RenderTargetView<Resources, Srgba8>)  {
+        (&mut self.factory, &self.view)
+    }
 
-        let size = self.window.size();
-        buffer.set_scissor(Rect {
-            x: 0,
-            y: 0,
-            w: size.0 as u16,
-            h: size.1 as u16,
-        });
+    pub fn context<'b>(&'b mut self) -> EncoderDrawContext<'b, Resources, GLCommandBuffer, GLDevice> {
+        self.encoder.clear(&mut self.view, CLEAR_COLOR);
+        self.encoder.clear_depth(&mut self.depth_stencil_view, 0.);
+        self.encoder.clear_stencil(&mut self.depth_stencil_view, 0);
 
-        let mut encoder: ObjectEncoder = self.factory
-            .create_command_buffer()
-            .into();
-
-        encoder.clear(&mut self.view, CLEAR_COLOR);
-        encoder.clear_depth(&mut self.depth_stencil_view, 0.);
-        encoder.clear_stencil(&mut self.depth_stencil_view, 0);
-
-        render(&mut encoder);
-
-        encoder.flush(&mut self.device);
-        self.window.gl_swap_window();
-        self.device.cleanup();
+        EncoderDrawContext {
+            context: EncoderContext {
+                matrix: self.matrix.clone(),
+                encoder: &mut self.encoder,
+            },
+            device: &mut self.device,
+            window: &mut self.window,
+        }
     }
 }
