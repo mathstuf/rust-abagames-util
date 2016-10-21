@@ -29,7 +29,8 @@ pub struct EncoderContext<'a, R, C: 'a>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
-    pub matrix: Matrix4<f32>,
+    pub perspective_matrix: Matrix4<f32>,
+    pub orthographic_matrix: Matrix4<f32>,
     pub encoder: &'a mut gfx::Encoder<R, C>,
 }
 
@@ -65,7 +66,8 @@ pub struct Video<'a> {
 
     encoder: Encoder,
 
-    matrix: Matrix4<f32>,
+    perspective_matrix: Matrix4<f32>,
+    orthographic_matrix: Matrix4<f32>,
 
     _phantom: PhantomData<&'a str>,
 }
@@ -116,7 +118,8 @@ impl<'a> Video<'a> {
         let encoder = factory.create_command_buffer().into();
 
         Ok(Video {
-            matrix: Self::perspective_matrix(width, height),
+            perspective_matrix: Self::calc_perspective_matrix(width, height),
+            orthographic_matrix: Self::calc_orthographic_matrix(),
 
             window: window,
             _gl_context: gl_context,
@@ -131,19 +134,24 @@ impl<'a> Video<'a> {
         })
     }
 
-    fn perspective_matrix(width: u32, height: u32) -> Matrix4<f32> {
+    fn calc_perspective_matrix(width: u32, height: u32) -> Matrix4<f32> {
         let aspect = (height as f32) / (width as f32);
         let fovy = ((height as f32) / (2. * FAR_PLANE)).atan() * 2.;
 
         cgmath::perspective(cgmath::Rad(fovy), aspect, NEAR_PLANE, FAR_PLANE)
     }
 
-    pub fn resize(&mut self, width: u32, height: u32) {
-        self.matrix = Self::perspective_matrix(width, height)
+    fn calc_orthographic_matrix() -> Matrix4<f32> {
+        // FIXME: Fix the 640x480 aspect ratio.
+        cgmath::ortho(0., 640., 480., 0., -1., 1.)
     }
 
-    pub fn matrix(&self) -> &Matrix4<f32> {
-        &self.matrix
+    pub fn resize(&mut self, width: u32, height: u32) {
+        self.perspective_matrix = Self::calc_perspective_matrix(width, height);
+    }
+
+    pub fn perspective_matrix(&self) -> &Matrix4<f32> {
+        &self.perspective_matrix
     }
 
     pub fn factory(&mut self) -> (&mut Factory, &RenderTargetView<Resources, Srgba8>)  {
@@ -157,7 +165,8 @@ impl<'a> Video<'a> {
 
         EncoderDrawContext {
             context: EncoderContext {
-                matrix: self.matrix.clone(),
+                perspective_matrix: self.perspective_matrix.clone(),
+                orthographic_matrix: self.orthographic_matrix.clone(),
                 encoder: &mut self.encoder,
             },
             device: &mut self.device,
