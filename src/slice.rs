@@ -28,15 +28,13 @@ pub fn slice_for_fan<R, F>(factory: &mut F, size: u32) -> gfx::Slice<R>
     where R: gfx::Resources,
           F: gfx::Factory<R>,
 {
-    let mut indices = Vec::with_capacity((size as usize) * 2 - 2);
+    let mut indices: Vec<u32> = Vec::with_capacity((size as usize) * 2 - 2);
 
-    indices.push(0);
-    indices.push(1);
-    for i in 2..size - 1 {
+    for (i, j) in (1..size).zip((2..size)) {
+        indices.push(0);
         indices.push(i);
-        indices.push(i);
+        indices.push(j);
     }
-    indices.push(size - 1);
 
     gfx::Slice {
         start: 0,
