@@ -5,12 +5,14 @@ extern crate sdl2;
 use self::sdl2::Sdl;
 pub use self::sdl2::event::Event;
 
+use super::input::Input;
+
 use std::error::Error;
 
 pub trait Game {
     fn init(&mut self) -> Result<(), Box<Error>>;
     fn handle_event(&mut self, event: &Event) -> Result<bool, Box<Error>>;
-    fn step_frame(&mut self) -> Result<f32, Box<Error>>;
+    fn step(&mut self, input: &Input) -> Result<f32, Box<Error>>;
     fn draw(&mut self) -> Result<(), Box<Error>>;
     fn quit(&mut self) -> Result<(), Box<Error>>;
 }
@@ -36,6 +38,7 @@ impl<'a> MainLoop<'a> {
     pub fn run<G: Game>(&self, mut game: G) -> Result<(), Box<Error>> {
         let mut pump = try!(self.sdl_context.event_pump());
         let mut timer = try!(self.sdl_context.timer());
+        let mouse = self.sdl_context.mouse();
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
@@ -79,8 +82,10 @@ impl<'a> MainLoop<'a> {
                 frame
             };
 
+            let input = Input::new(&pump, &mouse);
+
             let slowdown: f32 = try!([0..frames].iter()
-                .map(|_| game.step_frame())
+                .map(|_| game.step(&input))
                 .collect::<Result<Vec<_>, _>>())
                 .iter()
                 .sum();

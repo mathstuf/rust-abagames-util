@@ -10,6 +10,7 @@ use self::sdl2_mixer::Sdl2MixerContext;
 use super::paths::Paths;
 
 mod audio;
+mod input;
 mod mainloop;
 mod video;
 
@@ -17,6 +18,7 @@ use std::error::Error;
 use std::path::Path;
 
 pub use self::audio::*;
+pub use self::input::*;
 pub use self::mainloop::*;
 pub use self::video::*;
 
