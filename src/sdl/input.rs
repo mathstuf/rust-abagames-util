@@ -5,6 +5,7 @@ extern crate sdl2;
 use self::sdl2::EventPump;
 use self::sdl2::keyboard::KeyboardState;
 use self::sdl2::mouse::{MouseState, MouseUtil};
+pub use self::sdl2::keyboard::Scancode;
 
 pub struct Input<'a> {
     pub keyboard: KeyboardState<'a>,
