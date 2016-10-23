@@ -70,9 +70,15 @@ impl Rand {
 
 #[cfg(test)]
 mod test {
+    extern crate chrono;
+    use self::chrono::UTC;
+
     extern crate itertools;
+    use self::itertools::Itertools;
 
     use super::Rand;
+
+    use std::fmt::Debug;
 
     fn run_rand<T, F>(closure: F) -> Vec<T>
         where F: FnMut() -> T,
@@ -80,6 +86,47 @@ mod test {
         itertools::repeat_call(closure)
             .take(20)
             .collect()
+    }
+
+    fn verify_rand<T, F, P>(closure: F, pred: P) -> bool
+        where F: FnMut() -> T,
+              P: Fn(T) -> bool,
+              T: Debug,
+    {
+        itertools::repeat_call(closure)
+            .take(20)
+            .inspect(|t| print!("{:?}...", t))
+            .all(pred)
+    }
+
+    #[test]
+    fn test_ranges_work() {
+        let mut rand = Rand::new();
+        let seed = UTC::now().timestamp() as u32;
+
+        println!("seed: {}", seed);
+        rand.set_seed(seed);
+
+        (0..100).into_iter()
+            .inspect(|n| println!("\nrand.next_int({:?})...", n))
+            .foreach(|n| assert!(verify_rand(|| rand.next_int(n), |i| i < n || n == 0)));
+        (0..100).into_iter()
+            .inspect(|n| println!("\nrand.next_int_signed({:?})...", n))
+            .foreach(|n| assert!(verify_rand(|| rand.next_int_signed(n), |i| {
+                let n = n as i32;
+                -n <= i && i <= n
+            })));
+        (0..100).into_iter()
+            .inspect(|_| println!("\nrand.next_real()..."))
+            .foreach(|_| assert!(verify_rand(|| rand.next_real(), |f| 0. <= f && f < 1.)));
+        (0..100).into_iter()
+            .map(|n: usize| n as f32)
+            .inspect(|n| println!("\nrand.next_float({:?})...", n))
+            .foreach(|n| assert!(verify_rand(|| rand.next_float(n), |f| (0. <= f && f < n) || n == 0.)));
+        (0..100).into_iter()
+            .map(|n: usize| n as f32)
+            .inspect(|n| println!("\nrand.next_float_signed({:?})...", n))
+            .foreach(|n| assert!(verify_rand(|| rand.next_float_signed(n), |f| (-n <= f && f < n) || n == 0.)));
     }
 
     #[test]
