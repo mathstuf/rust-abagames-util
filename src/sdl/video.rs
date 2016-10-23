@@ -136,9 +136,8 @@ impl<'a> Video<'a> {
 
     fn calc_perspective_matrix(width: u32, height: u32) -> Matrix4<f32> {
         let aspect = (height as f32) / (width as f32);
-        let fovy = ((height as f32) / (2. * FAR_PLANE)).atan() * 2.;
 
-        cgmath::perspective(cgmath::Rad(fovy), aspect, NEAR_PLANE, FAR_PLANE)
+        cgmath::frustum(-NEAR_PLANE, NEAR_PLANE, -NEAR_PLANE * aspect, NEAR_PLANE * aspect, 0.1, FAR_PLANE)
     }
 
     fn calc_orthographic_matrix() -> Matrix4<f32> {
