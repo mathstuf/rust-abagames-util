@@ -2,7 +2,9 @@
 // See accompanying file LICENSE for details.
 
 extern crate cgmath;
-use self::cgmath::Vector2;
+use self::cgmath::{One, Vector2};
+
+use std::ops::{Add, Sub};
 
 pub fn fast_distance(v1: &Vector2<f32>, v2: &Vector2<f32>) -> f32 {
     let ax = (v1.x - v2.x).abs();
@@ -27,4 +29,74 @@ pub fn contains_raw(v1: &Vector2<f32>, x: f32, y: f32, radius: f32) -> bool {
 
 pub fn contains(v1: &Vector2<f32>, v2: &Vector2<f32>, radius: f32) -> bool {
     contains_raw(v1, v2.x, v2.y, radius)
+}
+
+#[inline]
+pub fn wrap_inc<T>(value: T, max: T) -> T
+    where T: PartialOrd + One + Add<T, Output=T> + Sub<T, Output=T> + Copy,
+{
+    wrap_inc_by(value, max, T::one())
+}
+
+#[inline]
+pub fn wrap_inc_by<T>(value: T, max: T, step: T) -> T
+    where T: PartialOrd + Add<T, Output=T> + Sub<T, Output=T> + Copy,
+{
+    let new_value = value + step;
+    if new_value >= max {
+        new_value - max
+    } else {
+        new_value
+    }
+}
+
+#[inline]
+pub fn wrap_dec<T>(value: T, max: T) -> T
+    where T: PartialOrd + One + Add<T, Output=T> + Sub<T, Output=T> + Copy,
+{
+    wrap_dec_by(value, max, T::one())
+}
+
+#[inline]
+pub fn wrap_dec_by<T>(value: T, max: T, step: T) -> T
+    where T: PartialOrd + Add<T, Output=T> + Sub<T, Output=T> + Copy,
+{
+    if value < step {
+        value + max - step
+    } else {
+        value - step
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use super::*;
+
+    #[test]
+    fn test_wrap_inc() {
+        assert_eq!(wrap_inc(1, 2), 0);
+        assert_eq!(wrap_inc(1, 3), 2);
+        assert_eq!(wrap_inc(0, 3), 1);
+    }
+
+    #[test]
+    fn test_wrap_inc_by() {
+        assert_eq!(wrap_inc_by(1, 2, 2), 1);
+        assert_eq!(wrap_inc_by(1, 3, 2), 0);
+        assert_eq!(wrap_inc_by(1, 4, 2), 3);
+    }
+
+    #[test]
+    fn test_wrap_dec() {
+        assert_eq!(wrap_dec(1, 2), 0);
+        assert_eq!(wrap_dec(1, 3), 0);
+        assert_eq!(wrap_dec(0, 3), 2);
+    }
+
+    #[test]
+    fn test_wrap_dec_by() {
+        assert_eq!(wrap_dec_by(1, 2, 2), 1);
+        assert_eq!(wrap_dec_by(1, 3, 2), 2);
+        assert_eq!(wrap_dec_by(1, 4, 2), 3);
+    }
 }
