@@ -8,11 +8,11 @@ license = "BSD-2-Clause"
 [dependencies]
 cgmath = "~0.12"
 chrono = "~0.2"
-gfx = "~0.12"
-gfx_device_gl = "~0.11"
-gfx_window_sdl = "~0.3"
+gfx = { git = "https://github.com/gfx-rs/gfx" }
+gfx_device_gl = { git = "https://github.com/gfx-rs/gfx" }
+gfx_window_sdl = { git = "https://github.com/gfx-rs/gfx" }
 itertools = "~0.5"
 mersenne_twister = "~0.3"
 rand = "~0.3"
-sdl2 = "~0.18"
-sdl2_mixer = "~0.17"
+sdl2 = "~0.23"
+sdl2_mixer = "~0.23"
