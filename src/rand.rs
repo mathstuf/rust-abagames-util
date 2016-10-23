@@ -52,19 +52,11 @@ impl Rand {
     }
 
     pub fn next_float(&mut self, n: f32) -> f32 {
-        if n == 0. {
-            0.
-        } else {
-            self.next_real() % n
-        }
+        self.next_real() * n
     }
 
     pub fn next_float_signed(&mut self, n: f32) -> f32 {
-        if n == 0. {
-            0.
-        } else {
-            self.next_real() % (2. * n) - n
-        }
+        self.next_real() * (2. * n) - n
     }
 }
 
