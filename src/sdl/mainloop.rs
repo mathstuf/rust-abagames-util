@@ -9,10 +9,27 @@ use super::input::Input;
 
 use std::error::Error;
 
+pub enum StepResult {
+    Slowdown(f32),
+    Done,
+}
+
+impl StepResult {
+    fn merge(self, other: Self) -> Self {
+        match (self, other) {
+            (StepResult::Done, _) |
+            (_, StepResult::Done) => StepResult::Done,
+            (StepResult::Slowdown(s1), StepResult::Slowdown(s2)) => {
+                StepResult::Slowdown(s1 + s2)
+            },
+        }
+    }
+}
+
 pub trait Game {
     fn init(&mut self) -> Result<(), Box<Error>>;
     fn handle_event(&mut self, event: &Event) -> Result<bool, Box<Error>>;
-    fn step(&mut self, input: &Input) -> Result<f32, Box<Error>>;
+    fn step(&mut self, input: &Input) -> Result<StepResult, Box<Error>>;
     fn draw(&mut self) -> Result<(), Box<Error>>;
     fn quit(&mut self) -> Result<(), Box<Error>>;
 }
@@ -48,7 +65,7 @@ impl<'a> MainLoop<'a> {
         loop {
             let event = pump.poll_event();
 
-            let is_done = if let Some(event) = event {
+            let mut is_done = if let Some(event) = event {
                 if let &Event::Quit{..} = &event {
                     true
                 } else {
@@ -84,11 +101,19 @@ impl<'a> MainLoop<'a> {
 
             let input = Input::new(&pump, &mouse);
 
-            let slowdown: f32 = try!([0..frames].iter()
+            let step_result = try!([0..frames].iter()
                 .map(|_| game.step(&input))
                 .collect::<Result<Vec<_>, _>>())
-                .iter()
-                .sum();
+                .into_iter()
+                .fold(StepResult::Slowdown(0.), StepResult::merge);
+
+            let slowdown = match step_result {
+                StepResult::Done => {
+                    is_done = true;
+                    0.
+                },
+                StepResult::Slowdown(s) => s,
+            };
 
             try!(game.draw());
 
