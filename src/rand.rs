@@ -31,16 +31,20 @@ impl Rand {
         self.twister.next_u32()
     }
 
-    fn next_i32(&mut self) -> i32 {
-        self.next_u32() as i32
-    }
-
     pub fn next_int(&mut self, n: u32) -> u32 {
-        self.next_u32() % n
+        if n == 0 {
+            0
+        } else {
+            self.next_u32() % n
+        }
     }
 
-    pub fn next_int_signed(&mut self, n: i32) -> i32 {
-        self.next_i32() % (2 * n + 1) - n
+    pub fn next_int_signed(&mut self, n: u32) -> i32 {
+        if n == 0 {
+            0
+        } else {
+            ((self.next_u32() % (2 * n + 1)) as i32) - (n as i32)
+        }
     }
 
     fn next_real(&mut self) -> f32 {
@@ -48,11 +52,19 @@ impl Rand {
     }
 
     pub fn next_float(&mut self, n: f32) -> f32 {
-        self.next_real() % n
+        if n == 0. {
+            0.
+        } else {
+            self.next_real() % n
+        }
     }
 
     pub fn next_float_signed(&mut self, n: f32) -> f32 {
-        self.next_real() % (2. * n) - n
+        if n == 0. {
+            0.
+        } else {
+            self.next_real() % (2. * n) - n
+        }
     }
 }
 
