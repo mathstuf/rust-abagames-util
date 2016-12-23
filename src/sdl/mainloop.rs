@@ -7,7 +7,8 @@ pub use self::sdl2::event::Event;
 
 use super::input::Input;
 
-use std::error::Error;
+use std::error;
+use std::result;
 
 pub enum StepResult {
     Slowdown(f32),
@@ -26,12 +27,16 @@ impl StepResult {
     }
 }
 
+error_chain! {}
+
 pub trait Game {
-    fn init(&mut self) -> Result<(), Box<Error>>;
-    fn handle_event(&mut self, event: &Event) -> Result<bool, Box<Error>>;
-    fn step(&mut self, input: &Input) -> Result<StepResult, Box<Error>>;
-    fn draw(&mut self) -> Result<(), Box<Error>>;
-    fn quit(&mut self) -> Result<(), Box<Error>>;
+    type Error: error::Error + Send + 'static;
+
+    fn init(&mut self) -> result::Result<(), Self::Error>;
+    fn handle_event(&mut self, event: &Event) -> result::Result<bool, Self::Error>;
+    fn step(&mut self, input: &Input) -> result::Result<StepResult, Self::Error>;
+    fn draw(&mut self) -> result::Result<(), Self::Error>;
+    fn quit(&mut self) -> result::Result<(), Self::Error>;
 }
 
 pub struct MainLoop<'a> {
@@ -52,14 +57,15 @@ impl<'a> MainLoop<'a> {
         }
     }
 
-    pub fn run<G: Game>(&self, mut game: G) -> Result<(), Box<Error>> {
+    pub fn run<G: Game>(&self, mut game: G) -> Result<()> {
         let mut pump = try!(self.sdl_context.event_pump());
         let mut timer = try!(self.sdl_context.timer());
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
 
-        try!(game.init());
+        try!(game.init()
+            .chain_err(|| "failed to initialize the game"));
 
         loop {
             let event = pump.poll_event();
@@ -68,7 +74,8 @@ impl<'a> MainLoop<'a> {
                 if let &Event::Quit{..} = &event {
                     true
                 } else {
-                    try!(game.handle_event(&event))
+                    try!(game.handle_event(&event)
+                        .chain_err(|| "failed to handle an event"))
                 }
             } else {
                 false
@@ -100,9 +107,9 @@ impl<'a> MainLoop<'a> {
 
             let input = Input::new(&pump);
 
-            let step_result = try!([0..frames].iter()
-                .map(|_| game.step(&input))
-                .collect::<Result<Vec<_>, _>>())
+            let step_result = try!((0..frames)
+                .map(|_| Ok(try!(game.step(&input).chain_err(|| "failed to step the game"))))
+                .collect::<Result<Vec<_>>>())
                 .into_iter()
                 .fold(StepResult::Slowdown(0.), StepResult::merge);
 
@@ -114,7 +121,8 @@ impl<'a> MainLoop<'a> {
                 StepResult::Slowdown(s) => s,
             };
 
-            try!(game.draw());
+            try!(game.draw()
+                .chain_err(|| "failed to draw a frame"));
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
@@ -125,7 +133,8 @@ impl<'a> MainLoop<'a> {
             }
         }
 
-        try!(game.quit());
+        try!(game.quit()
+            .chain_err(|| "failed to quit the game"));
 
         Ok(())
     }

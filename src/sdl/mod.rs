@@ -9,18 +9,28 @@ use self::sdl2_mixer::Sdl2MixerContext;
 
 use super::paths::Paths;
 
-mod audio;
-mod input;
-mod mainloop;
-mod video;
+pub mod audio;
+pub mod input;
+pub mod mainloop;
+pub mod video;
 
-use std::error::Error;
 use std::path::Path;
 
-pub use self::audio::*;
-pub use self::input::*;
-pub use self::mainloop::*;
-pub use self::video::*;
+pub use self::audio::Audio;
+pub use self::input::{Input, Scancode};
+pub use self::mainloop::{Event, Game, MainLoop, StepResult};
+pub use self::video::{EncoderContext, EncoderDrawContext, Resources, Video};
+
+error_chain! {
+    links {
+        Audio(audio::Error, audio::ErrorKind)
+            #[doc = "errors from the audio subsystem"];
+        Mainloop(mainloop::Error, mainloop::ErrorKind)
+            #[doc = "errors from the main loop and game itself"];
+        Video(video::Error, video::ErrorKind)
+            #[doc = "errors from the video subsystem"];
+    }
+}
 
 pub struct SdlInfo<'a> {
     pub audio: Option<Audio<'a>>,
@@ -40,14 +50,15 @@ pub struct SdlBuilder {
 }
 
 impl SdlBuilder {
-    pub fn new<C, P>(caption: C, source_path: P) -> Result<Self, Box<Error>>
+    pub fn new<C, P>(caption: C, source_path: P) -> Result<Self>
         where C: ToString,
               P: AsRef<Path>,
     {
         Ok(SdlBuilder {
             sdl: try!(sdl2::init()),
             sdl_mixer_context: None,
-            paths: try!(Paths::new(source_path)),
+            paths: try!(Paths::new(source_path)
+                .chain_err(|| "failed to set up paths")),
 
             audio: true,
 
@@ -72,7 +83,7 @@ impl SdlBuilder {
         self
     }
 
-    pub fn build<'a>(&'a mut self) -> Result<(SdlInfo<'a>, MainLoop<'a>), Box<Error>> {
+    pub fn build<'a>(&'a mut self) -> Result<(SdlInfo<'a>, MainLoop<'a>)> {
         let audio = if self.audio {
             try!(self.sdl.audio());
             self.sdl_mixer_context = Some(try!(sdl2_mixer::init(sdl2_mixer::INIT_OGG)));

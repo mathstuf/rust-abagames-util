@@ -6,11 +6,12 @@ use self::sdl2_mixer::{AudioFormat, Channel, Chunk, Music};
 
 use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;
-use std::error::Error;
 use std::fs;
 use std::marker::PhantomData;
 use std::mem;
 use std::path::{Path, PathBuf};
+
+error_chain! {}
 
 pub struct AudioData {
     path: PathBuf,
@@ -22,18 +23,22 @@ pub struct AudioData {
 }
 
 impl AudioData {
-    fn new(asset_dir: &Path) -> Result<Self, Box<Error>> {
+    fn new(asset_dir: &Path) -> Result<Self> {
         let sounds_dir = asset_dir.join("sounds");
 
-        let read_dir = try!(fs::read_dir(sounds_dir.join("musics")));
+        let read_dir = try!(fs::read_dir(sounds_dir.join("musics"))
+            .chain_err(|| "failed to list the music directory"));
         let music = try!(read_dir.map(|entry| {
-            let entry = try!(entry);
-            let music = try!(Music::from_file(&entry.path()));
+            let entry = try!(entry.chain_err(|| "failed to fetch a directory entry"));
+            let music = try!(Music::from_file(&entry.path())
+                .map_err(|err| ErrorKind::Msg(format!("failed to read the music file {:?}: {}",
+                                                      entry.path(),
+                                                      err))));
             let file_name = entry.file_name().to_string_lossy().into_owned();
 
             Ok((file_name, music))
         })
-        .collect::<Result<HashMap<_, _>, Box<Error>>>());
+        .collect::<Result<HashMap<_, _>>>());
 
         Ok(AudioData {
             path: sounds_dir,
@@ -45,7 +50,7 @@ impl AudioData {
         })
     }
 
-    fn load_sfx(&mut self, name: &str, channel: isize) -> Result<(), Box<Error>> {
+    fn load_sfx(&mut self, name: &str, channel: isize) -> Result<()> {
         let path = self.path.join("chunks").join(name);
         let chunk = try!(Chunk::from_file(&path));
 
@@ -96,7 +101,7 @@ static PLAY_UNLIMITED: isize = -1;
 static FADE_OUT_TIME: isize = 1280;
 
 impl<'a> Audio<'a> {
-    pub fn new(asset_dir: &Path) -> Result<Self, Box<Error>> {
+    pub fn new(asset_dir: &Path) -> Result<Self> {
         try!(sdl2_mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS));
         sdl2_mixer::allocate_channels(CHANNELS);
 
@@ -109,12 +114,12 @@ impl<'a> Audio<'a> {
         })
     }
 
-    pub fn load_sfx(&mut self, sfx: &[(&str, isize)]) -> Result<&mut Self, Box<Error>> {
+    pub fn load_sfx(&mut self, sfx: &[(&str, isize)]) -> Result<&mut Self> {
         try!(sfx.iter()
             .map(|&(ref name, channel)| {
                 self.data.load_sfx(name, channel)
             })
-            .collect::<Result<Vec<_>, _>>());
+            .collect::<Result<Vec<_>>>());
 
         Ok(self)
     }
