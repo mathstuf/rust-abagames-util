@@ -75,10 +75,10 @@ impl<'a> MainLoop<'a> {
             };
 
             let now_tick = timer.ticks();
-            let interval_u32 = interval as u32;
             let frame = (((now_tick as f32) - (prev_tick as f32)) / interval) as i32;
 
             let frames = if frame <= 0 {
+                let interval_u32 = interval as u32;
                 timer.delay(prev_tick + interval_u32 - now_tick);
 
                 if ACCELERATE_FRAME {
