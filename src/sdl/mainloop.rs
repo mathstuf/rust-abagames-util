@@ -28,9 +28,7 @@ impl StepResult {
         match (self, other) {
             (StepResult::Done, _) |
             (_, StepResult::Done) => StepResult::Done,
-            (StepResult::Slowdown(s1), StepResult::Slowdown(s2)) => {
-                StepResult::Slowdown(s1 + s2)
-            },
+            (StepResult::Slowdown(s1), StepResult::Slowdown(s2)) => StepResult::Slowdown(s1 + s2),
         }
     }
 }
@@ -100,7 +98,7 @@ impl<'a> MainLoop<'a> {
             let event = pump.poll_event();
 
             let mut is_done = if let Some(event) = event {
-                if let &Event::Quit{..} = &event {
+                if let &Event::Quit { .. } = &event {
                     true
                 } else {
                     try!(game.handle_event(&event)
@@ -169,7 +167,8 @@ impl<'a> MainLoop<'a> {
     }
 
     fn calculate_interval(interval: f32, slowdown: f32) -> f32 {
-        interval + if slowdown > SLOWDOWN_START_RATIO {
+        interval +
+        if slowdown > SLOWDOWN_START_RATIO {
             let ratio = f32::min(slowdown / SLOWDOWN_START_RATIO, SLOWDOWN_MAX_RATIO);
             (ratio * INTERVAL_BASE - interval) * 0.1
         } else {

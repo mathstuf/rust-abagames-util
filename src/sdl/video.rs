@@ -50,7 +50,7 @@ pub struct EncoderContext<'a, R, C: 'a>
 pub struct EncoderDrawContext<'a, R, C: 'a, D: 'a>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
-          D: gfx::Device<Resources=R, CommandBuffer=C>,
+          D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     /// The encoder context.
     pub context: EncoderContext<'a, R, C>,
@@ -61,7 +61,7 @@ pub struct EncoderDrawContext<'a, R, C: 'a, D: 'a>
 impl<'a, R, C, D> Drop for EncoderDrawContext<'a, R, C, D>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
-          D: gfx::Device<Resources=R, CommandBuffer=C>,
+          D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     fn drop(&mut self) {
         self.context.encoder.flush(self.device);
@@ -95,18 +95,17 @@ impl<'a> Video<'a> {
     /// Create a new video structure.
     ///
     /// This creates the window and rendering surface for the video subsystem as well.
-    pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool) -> Result<Self> {
+    pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool)
+               -> Result<Self> {
         let video = try!(sdl_context.video()
-            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {}",
-                                                  err))));
+            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {}", err))));
 
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_flags().debug().set();
         gl_attr.set_context_version(3, 2);
         try!(video.gl_load_library_default()
-            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {}",
-                                                  err))));
+            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {}", err))));
 
         let &(width, height) = size;
 
@@ -125,7 +124,8 @@ impl<'a> Video<'a> {
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
             gfx_window_sdl::init(&mut window);
 
-        let mut renderer = try!(window.renderer().build()
+        let mut renderer = try!(window.renderer()
+            .build()
             .chain_err(|| "failed to build a renderer"));
         try!(renderer.set_logical_size(width, height)
             .chain_err(|| "failed to set the logical window size"));
@@ -161,7 +161,12 @@ impl<'a> Video<'a> {
     fn calc_perspective_matrix(width: u32, height: u32) -> Matrix4<f32> {
         let aspect = (height as f32) / (width as f32);
 
-        cgmath::frustum(-NEAR_PLANE, NEAR_PLANE, -NEAR_PLANE * aspect, NEAR_PLANE * aspect, 0.1, FAR_PLANE)
+        cgmath::frustum(-NEAR_PLANE,
+                        NEAR_PLANE,
+                        -NEAR_PLANE * aspect,
+                        NEAR_PLANE * aspect,
+                        0.1,
+                        FAR_PLANE)
     }
 
     fn calc_orthographic_matrix() -> Matrix4<f32> {
@@ -190,7 +195,8 @@ impl<'a> Video<'a> {
     }
 
     /// The context for the current state of the video subsystem.
-    pub fn context<'b>(&'b mut self) -> EncoderDrawContext<'b, Resources, GLCommandBuffer, GLDevice> {
+    pub fn context<'b>(&'b mut self)
+                       -> EncoderDrawContext<'b, Resources, GLCommandBuffer, GLDevice> {
         self.encoder.clear(&mut self.view, CLEAR_COLOR);
         self.encoder.clear_depth(&mut self.depth_stencil_view, 0.);
         self.encoder.clear_stencil(&mut self.depth_stencil_view, 0);

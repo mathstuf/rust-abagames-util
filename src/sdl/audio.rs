@@ -35,10 +35,11 @@ impl AudioData {
             .chain_err(|| "failed to list the music directory"));
         let music = try!(read_dir.map(|entry| {
             let entry = try!(entry.chain_err(|| "failed to fetch a directory entry"));
-            let music = try!(Music::from_file(&entry.path())
-                .map_err(|err| ErrorKind::Msg(format!("failed to read the music file {:?}: {}",
-                                                      entry.path(),
-                                                      err))));
+            let music = try!(Music::from_file(&entry.path()).map_err(|err| {
+                ErrorKind::Msg(format!("failed to read the music file {:?}: {}",
+                                       entry.path(),
+                                       err))
+            }));
             let file_name = entry.file_name().to_string_lossy().into_owned();
 
             Ok((file_name, music))
@@ -80,10 +81,9 @@ impl AudioData {
 
         sfx_to_play.iter()
             .map(|&name| {
-                self.sfx.get(name)
-                    .map(|&(ref sfx, channel)| {
-                        channel.play(&sfx, 0)
-                    })
+                self.sfx
+                    .get(name)
+                    .map(|&(ref sfx, channel)| channel.play(&sfx, 0))
                     .is_some()
             })
             .all(|b| b)

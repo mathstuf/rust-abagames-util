@@ -62,8 +62,7 @@ impl SdlBuilder {
         Ok(SdlBuilder {
             sdl: try!(sdl2::init()),
             sdl_mixer_context: None,
-            paths: try!(Paths::new(source_path)
-                .chain_err(|| "failed to set up paths")),
+            paths: try!(Paths::new(source_path).chain_err(|| "failed to set up paths")),
 
             audio: true,
 

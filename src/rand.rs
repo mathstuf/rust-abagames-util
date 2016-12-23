@@ -108,26 +108,38 @@ mod test {
         println!("seed: {}", seed);
         rand.set_seed(seed);
 
-        (0..100).into_iter()
+        (0..100)
+            .into_iter()
             .inspect(|n| println!("\nrand.next_int({:?})...", n))
             .foreach(|n| assert!(verify_rand(|| rand.next_int(n), |i| i < n || n == 0)));
-        (0..100).into_iter()
+        (0..100)
+            .into_iter()
             .inspect(|n| println!("\nrand.next_int_signed({:?})...", n))
-            .foreach(|n| assert!(verify_rand(|| rand.next_int_signed(n), |i| {
-                let n = n as i32;
-                -n <= i && i <= n
-            })));
-        (0..100).into_iter()
+            .foreach(|n| {
+                assert!(verify_rand(|| rand.next_int_signed(n), |i| {
+                    let n = n as i32;
+                    -n <= i && i <= n
+                }))
+            });
+        (0..100)
+            .into_iter()
             .inspect(|_| println!("\nrand.next_real()..."))
             .foreach(|_| assert!(verify_rand(|| rand.next_real(), |f| 0. <= f && f < 1.)));
-        (0..100).into_iter()
+        (0..100)
+            .into_iter()
             .map(|n: usize| n as f32)
             .inspect(|n| println!("\nrand.next_float({:?})...", n))
-            .foreach(|n| assert!(verify_rand(|| rand.next_float(n), |f| (0. <= f && f < n) || n == 0.)));
-        (0..100).into_iter()
+            .foreach(|n| {
+                assert!(verify_rand(|| rand.next_float(n), |f| (0. <= f && f < n) || n == 0.))
+            });
+        (0..100)
+            .into_iter()
             .map(|n: usize| n as f32)
             .inspect(|n| println!("\nrand.next_float_signed({:?})...", n))
-            .foreach(|n| assert!(verify_rand(|| rand.next_float_signed(n), |f| (-n <= f && f < n) || n == 0.)));
+            .foreach(|n| {
+                assert!(verify_rand(|| rand.next_float_signed(n),
+                                    |f| (-n <= f && f < n) || n == 0.))
+            });
     }
 
     #[test]
