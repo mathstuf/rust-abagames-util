@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
 
 error_chain! {}
 
-pub struct AudioData {
+struct AudioData {
     path: PathBuf,
 
     music: HashMap<String, Music>,

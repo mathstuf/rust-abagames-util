@@ -23,7 +23,7 @@ fn between<T>(low: T, expect: T, high: T) -> bool
     low <= expect && expect <= high
 }
 
-pub fn contains_raw(v1: &Vector2<f32>, x: f32, y: f32, radius: f32) -> bool {
+fn contains_raw(v1: &Vector2<f32>, x: f32, y: f32, radius: f32) -> bool {
     between(-v1.x * radius, x, v1.x * radius) && between(-v1.y * radius, y, v1.y * radius)
 }
 

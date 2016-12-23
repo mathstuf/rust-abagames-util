@@ -40,7 +40,7 @@ pub struct SdlInfo<'a> {
 pub struct SdlBuilder {
     sdl: Sdl,
     sdl_mixer_context: Option<Sdl2MixerContext>,
-    pub paths: Paths,
+    paths: Paths,
 
     audio: bool,
 
