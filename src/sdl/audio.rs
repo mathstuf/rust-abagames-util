@@ -125,11 +125,11 @@ impl<'a> Audio<'a> {
     }
 
     /// Load sound effects for playing on specific channels.
-    pub fn load_sfx(&mut self, sfx: &[(&str, isize)]) -> Result<&mut Self> {
-        try!(sfx.iter()
-            .map(|&(ref name, channel)| {
-                self.data.load_sfx(name, channel)
-            })
+    pub fn load_sfx<I, N>(&mut self, sfx: I) -> Result<&mut Self>
+        where I: Iterator<Item = (N, isize)>,
+              N: AsRef<str>,
+    {
+        try!(sfx.map(|(ref name, channel)| self.data.load_sfx(name.as_ref(), channel))
             .collect::<Result<Vec<_>>>());
 
         Ok(self)
