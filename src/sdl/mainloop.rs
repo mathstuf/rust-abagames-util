@@ -55,7 +55,6 @@ impl<'a> MainLoop<'a> {
     pub fn run<G: Game>(&self, mut game: G) -> Result<(), Box<Error>> {
         let mut pump = try!(self.sdl_context.event_pump());
         let mut timer = try!(self.sdl_context.timer());
-        let mouse = self.sdl_context.mouse();
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
@@ -99,7 +98,7 @@ impl<'a> MainLoop<'a> {
                 frame
             };
 
-            let input = Input::new(&pump, &mouse);
+            let input = Input::new(&pump);
 
             let step_result = try!([0..frames].iter()
                 .map(|_| game.step(&input))
