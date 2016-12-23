@@ -153,7 +153,11 @@ impl<'a> Video<'a> {
         &self.perspective_matrix
     }
 
-    pub fn factory(&mut self) -> (&mut Factory, &RenderTargetView<Resources, Srgba8>)  {
+    pub fn factory(&mut self) -> &mut Factory {
+        &mut self.factory
+    }
+
+    pub fn factory_view(&mut self) -> (&mut Factory, &RenderTargetView<Resources, Srgba8>) {
         (&mut self.factory, &self.view)
     }
 
