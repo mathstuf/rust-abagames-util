@@ -6,6 +6,7 @@ use self::gfx::IntoIndexBuffer;
 
 use std::iter;
 
+/// Compute a slice for a line loop of the given size.
 pub fn slice_for_loop<R, F>(factory: &mut F, size: u32) -> gfx::Slice<R>
     where R: gfx::Resources,
           F: gfx::Factory<R>,
@@ -24,6 +25,7 @@ pub fn slice_for_loop<R, F>(factory: &mut F, size: u32) -> gfx::Slice<R>
     }
 }
 
+/// Compute a slice for a fan consisting of a number of triangles.
 pub fn slice_for_fan<R, F>(factory: &mut F, size: u32) -> gfx::Slice<R>
     where R: gfx::Resources,
           F: gfx::Factory<R>,

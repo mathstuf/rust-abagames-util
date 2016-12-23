@@ -1,6 +1,12 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
+//! Video subsystem support
+//!
+//! This module contains all of the structures required to juggle the graphics resources for a
+//! game. It includes bits for holding the view matrix as well as a context structure to handle
+//! flushing the rendering commands to the device.
+
 extern crate gfx;
 use self::gfx::format::{DepthStencil, Srgba8};
 use self::gfx::handle::{DepthStencilView, RenderTargetView};
@@ -22,24 +28,31 @@ use self::sdl2::video::{GLContext, GLProfile, Window};
 use std::marker::PhantomData;
 
 pub use self::gfx_device_gl::{Factory, Resources};
+/// The specialized encoder type for the games.
 pub type Encoder = gfx::Encoder<Resources, GLCommandBuffer>;
 
 error_chain! {}
 
+/// A context object for queuing commands to the rendering device.
 pub struct EncoderContext<'a, R, C: 'a>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
+    /// The view matrix for perspective rendering.
     pub perspective_matrix: Matrix4<f32>,
+    /// The view matrix for orthographic rendering.
     pub orthographic_matrix: Matrix4<f32>,
+    /// The encoder object.
     pub encoder: &'a mut gfx::Encoder<R, C>,
 }
 
+/// A context object to handle flushing commands to a device automatically.
 pub struct EncoderDrawContext<'a, R, C: 'a, D: 'a>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
           D: gfx::Device<Resources=R, CommandBuffer=C>,
 {
+    /// The encoder context.
     pub context: EncoderContext<'a, R, C>,
     device: &'a mut D,
     window: &'a mut Window,
@@ -57,6 +70,7 @@ impl<'a, R, C, D> Drop for EncoderDrawContext<'a, R, C, D>
     }
 }
 
+/// Video support.
 pub struct Video<'a> {
     window: Window,
     _gl_context: GLContext,
@@ -78,6 +92,9 @@ static FAR_PLANE: f32 = 1000.;
 static CLEAR_COLOR: [f32; 4] = [0.; 4];
 
 impl<'a> Video<'a> {
+    /// Create a new video structure.
+    ///
+    /// This creates the window and rendering surface for the video subsystem as well.
     pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool) -> Result<Self> {
         let video = try!(sdl_context.video()
             .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {}",
@@ -152,22 +169,27 @@ impl<'a> Video<'a> {
         cgmath::ortho(0., 640., 480., 0., -1., 1.)
     }
 
+    /// Resize the window.
     pub fn resize(&mut self, width: u32, height: u32) {
         self.perspective_matrix = Self::calc_perspective_matrix(width, height);
     }
 
+    /// The perspective matrix for the window.
     pub fn perspective_matrix(&self) -> &Matrix4<f32> {
         &self.perspective_matrix
     }
 
+    /// The factory for handling resources with the device.
     pub fn factory(&mut self) -> &mut Factory {
         &mut self.factory
     }
 
+    /// The factory and viewpoint for the device and window.
     pub fn factory_view(&mut self) -> (&mut Factory, &RenderTargetView<Resources, Srgba8>) {
         (&mut self.factory, &self.view)
     }
 
+    /// The context for the current state of the video subsystem.
     pub fn context<'b>(&'b mut self) -> EncoderDrawContext<'b, Resources, GLCommandBuffer, GLDevice> {
         self.encoder.clear(&mut self.view, CLEAR_COLOR);
         self.encoder.clear_depth(&mut self.depth_stencil_view, 0.);

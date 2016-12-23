@@ -1,6 +1,11 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
+//! Mainloop support
+//!
+//! This module contains the logic for the main loop of a game and a trait which is used by the
+//! loop.
+
 extern crate sdl2;
 use self::sdl2::Sdl;
 pub use self::sdl2::event::Event;
@@ -10,8 +15,11 @@ use super::input::Input;
 use std::error;
 use std::result;
 
+/// Behavior from stepping a frame in the game state.
 pub enum StepResult {
+    /// Slow down the game by the given factor.
     Slowdown(f32),
+    /// The game is complete.
     Done,
 }
 
@@ -29,16 +37,35 @@ impl StepResult {
 
 error_chain! {}
 
+/// Trait for a game which can be run by the event loop.
 pub trait Game {
+    /// The error type for the game.
     type Error: error::Error + Send + 'static;
 
+    /// Initialize the game.
+    ///
+    /// Any one-time initialization routines should be completed in this method.
     fn init(&mut self) -> result::Result<(), Self::Error>;
+
+    /// Handle an event within the game.
+    ///
+    /// This is where events are given to the main loop. Return `true` if the game should exit,
+    /// `false` to continue.
     fn handle_event(&mut self, event: &Event) -> result::Result<bool, Self::Error>;
+
+    /// Step the game one frame with the given input.
     fn step(&mut self, input: &Input) -> result::Result<StepResult, Self::Error>;
+
+    /// Draw the game to the screen.
     fn draw(&mut self) -> result::Result<(), Self::Error>;
+
+    /// Quit the game.
+    ///
+    /// Cleanup routines should be run here.
     fn quit(&mut self) -> result::Result<(), Self::Error>;
 }
 
+/// The mainloop structure.
 pub struct MainLoop<'a> {
     sdl_context: &'a Sdl,
 }
@@ -51,12 +78,14 @@ static SLOWDOWN_START_RATIO: f32 = 1.;
 static SLOWDOWN_MAX_RATIO: f32 = 1.75;
 
 impl<'a> MainLoop<'a> {
+    /// Create a new main loop from and SDL context.
     pub fn new(sdl_context: &'a Sdl) -> Self {
         MainLoop {
             sdl_context: &sdl_context,
         }
     }
 
+    /// Run a game to completion.
     pub fn run<G: Game>(&self, mut game: G) -> Result<()> {
         let mut pump = try!(self.sdl_context.event_pump());
         let mut timer = try!(self.sdl_context.timer());

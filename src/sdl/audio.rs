@@ -1,6 +1,11 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
+//! Audio subsystem support
+//!
+//! This module contains utilities to assist in loading any playing audio including background
+//! music and sound effects.
+
 extern crate sdl2_mixer;
 use self::sdl2_mixer::{AudioFormat, Channel, Chunk, Music};
 
@@ -85,6 +90,7 @@ impl AudioData {
     }
 }
 
+/// Audio support.
 pub struct Audio<'a> {
     data: AudioData,
     music_enabled: bool,
@@ -101,6 +107,10 @@ static PLAY_UNLIMITED: isize = -1;
 static FADE_OUT_TIME: isize = 1280;
 
 impl<'a> Audio<'a> {
+    /// Load all audio files from a directory.
+    ///
+    /// Sound effects are loaded from the `sounds/chunks` subdirectory and music from the
+    /// `sounds/musics` subdirectory.
     pub fn new(asset_dir: &Path) -> Result<Self> {
         try!(sdl2_mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS));
         sdl2_mixer::allocate_channels(CHANNELS);
@@ -114,6 +124,7 @@ impl<'a> Audio<'a> {
         })
     }
 
+    /// Load sound effects for playing on specific channels.
     pub fn load_sfx(&mut self, sfx: &[(&str, isize)]) -> Result<&mut Self> {
         try!(sfx.iter()
             .map(|&(ref name, channel)| {
@@ -124,12 +135,14 @@ impl<'a> Audio<'a> {
         Ok(self)
     }
 
+    /// Set whether music is enabled or not.
     pub fn set_music_enabled(&mut self, enabled: bool) -> &mut Self {
         self.music_enabled = enabled;
 
         self
     }
 
+    /// Play the named music file in a loop.
     pub fn play_music(&self, name: &str) -> bool {
         if self.music_enabled {
             self.data.play_music(name, PLAY_UNLIMITED)
@@ -138,6 +151,7 @@ impl<'a> Audio<'a> {
         }
     }
 
+    /// Play the named music file.
     pub fn play_music_once(&self, name: &str) -> bool {
         if self.music_enabled {
             self.data.play_music(name, 1)
@@ -146,12 +160,14 @@ impl<'a> Audio<'a> {
         }
     }
 
+    /// Set whether sound effects are enabled or not.
     pub fn set_sfx_enabled(&mut self, enabled: bool) -> &mut Self {
         self.sfx_enabled = enabled;
 
         self
     }
 
+    /// Queue a sound effect to be played.
     pub fn mark_sfx(&mut self, name: &'static str) -> bool {
         if self.sfx_enabled {
             self.data.mark_sfx(name)
@@ -160,6 +176,7 @@ impl<'a> Audio<'a> {
         }
     }
 
+    /// Play all queued sound effects.
     pub fn play_sfx(&mut self) -> bool {
         if self.sfx_enabled {
             self.data.play_sfx()
@@ -168,10 +185,12 @@ impl<'a> Audio<'a> {
         }
     }
 
+    /// Fade out the current music.
     pub fn fade(&self) {
         Music::fade_out(FADE_OUT_TIME).unwrap()
     }
 
+    /// Stop playing all music.
     pub fn halt(&self) {
         Music::halt()
     }

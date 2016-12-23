@@ -1,6 +1,12 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
+//! Abagames Utilities
+//!
+//! These utilities are used by the various games by Kenta Cho.
+
+#![warn(missing_docs)]
+
 #[macro_use]
 extern crate error_chain;
 

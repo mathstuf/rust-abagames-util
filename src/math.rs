@@ -6,6 +6,7 @@ use self::cgmath::{One, Vector2};
 
 use std::ops::{Add, Sub};
 
+/// Compute a Manhattan distance between two points.
 pub fn fast_distance(v1: &Vector2<f32>, v2: &Vector2<f32>) -> f32 {
     let ax = (v1.x - v2.x).abs();
     let ay = (v1.y - v2.y).abs();
@@ -27,11 +28,13 @@ fn contains_raw(v1: &Vector2<f32>, x: f32, y: f32, radius: f32) -> bool {
     between(-v1.x * radius, x, v1.x * radius) && between(-v1.y * radius, y, v1.y * radius)
 }
 
+/// Determine whether `v2` is within `radius` units of `v1`.
 pub fn contains(v1: &Vector2<f32>, v2: &Vector2<f32>, radius: f32) -> bool {
     contains_raw(v1, v2.x, v2.y, radius)
 }
 
 #[inline]
+/// Increment a value by one around within a range.
 pub fn wrap_inc<T>(value: T, max: T) -> T
     where T: PartialOrd + One + Add<T, Output=T> + Sub<T, Output=T> + Copy,
 {
@@ -39,6 +42,7 @@ pub fn wrap_inc<T>(value: T, max: T) -> T
 }
 
 #[inline]
+/// Increment a value by a given step around within a range.
 pub fn wrap_inc_by<T>(value: T, max: T, step: T) -> T
     where T: PartialOrd + Add<T, Output=T> + Sub<T, Output=T> + Copy,
 {
@@ -51,6 +55,7 @@ pub fn wrap_inc_by<T>(value: T, max: T, step: T) -> T
 }
 
 #[inline]
+/// Decrement a value by one around within a range.
 pub fn wrap_dec<T>(value: T, max: T) -> T
     where T: PartialOrd + One + Add<T, Output=T> + Sub<T, Output=T> + Copy,
 {
@@ -58,6 +63,7 @@ pub fn wrap_dec<T>(value: T, max: T) -> T
 }
 
 #[inline]
+/// Decrement a value by a given step around within a range.
 pub fn wrap_dec_by<T>(value: T, max: T, step: T) -> T
     where T: PartialOrd + Add<T, Output=T> + Sub<T, Output=T> + Copy,
 {

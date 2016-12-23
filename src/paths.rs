@@ -6,13 +6,20 @@ use std::env;
 use std::io;
 use std::path::{Path, PathBuf};
 
+/// Paths for configuration and data storage.
 pub struct Paths {
+    /// Directory for storing configuration files.
     pub config_dir: PathBuf,
+    /// Directory for storing data files.
     pub data_dir: PathBuf,
+    /// Directory for storing assets.
     pub asset_dir: PathBuf,
 }
 
 impl Paths {
+    /// Construct paths based on a given source tree.
+    ///
+    /// This allows a binary to be run in both an install tree and a build tree.
     pub fn new<P: AsRef<Path>>(source_path: P) -> io::Result<Self> {
         let (base_dir, is_install) = try!(Self::base_path_dir(source_path.as_ref()));
 

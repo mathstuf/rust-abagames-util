@@ -10,11 +10,13 @@ use self::mersenne_twister::MT19937;
 extern crate rand;
 use self::rand::{Rng, SeedableRng};
 
+/// Seedable and repeatable source of random numbers.
 pub struct Rand {
     twister: MT19937,
 }
 
 impl Rand {
+    /// Create a new random number source.
     pub fn new() -> Self {
         let seed = UTC::now().timestamp() as u32;
 
@@ -23,14 +25,17 @@ impl Rand {
         }
     }
 
+    /// Set the seed of the source.
     pub fn set_seed(&mut self, seed: u32) {
         self.twister.reseed(seed)
     }
 
+    /// Get the next 32-bit unsigned integer.
     pub fn next_u32(&mut self) -> u32 {
         self.twister.next_u32()
     }
 
+    /// Get a 32-bit unsigned integer between 0 and `n`.
     pub fn next_int(&mut self, n: u32) -> u32 {
         if n == 0 {
             0
@@ -39,6 +44,7 @@ impl Rand {
         }
     }
 
+    /// Get a 32-bit signed integer in the range of `-n` to `n`.
     pub fn next_int_signed(&mut self, n: u32) -> i32 {
         if n == 0 {
             0
@@ -47,14 +53,17 @@ impl Rand {
         }
     }
 
+    /// Get a real number between 0 and 1.
     fn next_real(&mut self) -> f32 {
         ((self.next_u32() as f64) * (1. / 4294967295.)) as f32
     }
 
+    /// Get a real number between 0 and `n`.
     pub fn next_float(&mut self, n: f32) -> f32 {
         self.next_real() * n
     }
 
+    /// Get a real number between `-n` and `n`.
     pub fn next_float_signed(&mut self, n: f32) -> f32 {
         self.next_real() * (2. * n) - n
     }

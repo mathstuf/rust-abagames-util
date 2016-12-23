@@ -32,11 +32,15 @@ error_chain! {
     }
 }
 
+/// SDL subsystem structure.
 pub struct SdlInfo<'a> {
+    /// The audio subsystem.
     pub audio: Option<Audio<'a>>,
+    /// The video subsystem.
     pub video: Video<'a>,
 }
 
+/// A builder object for the SDL context.
 pub struct SdlBuilder {
     sdl: Sdl,
     sdl_mixer_context: Option<Sdl2MixerContext>,
@@ -50,6 +54,7 @@ pub struct SdlBuilder {
 }
 
 impl SdlBuilder {
+    /// Create a new SDL structure.
     pub fn new<C, P>(caption: C, source_path: P) -> Result<Self>
         where C: ToString,
               P: AsRef<Path>,
@@ -68,21 +73,25 @@ impl SdlBuilder {
         })
     }
 
+    /// Enable or disable the audio subsystem.
     pub fn with_audio(&mut self, audio: bool) -> &mut Self {
         self.audio = audio;
         self
     }
 
+    /// Resize the window.
     pub fn with_size(&mut self, size: (u32, u32)) -> &mut Self {
         self.size = size;
         self
     }
 
+    /// Enable or disable windowed mode.
     pub fn windowed_mode(&mut self, windowed: bool) -> &mut Self {
         self.windowed = windowed;
         self
     }
 
+    /// Construct the subsystem structure and the main loop.
     pub fn build<'a>(&'a mut self) -> Result<(SdlInfo<'a>, MainLoop<'a>)> {
         let audio = if self.audio {
             try!(self.sdl.audio());
