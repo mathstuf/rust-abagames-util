@@ -113,7 +113,7 @@ impl<'a> MainLoop<'a> {
 
             let frames = if frame <= 0 {
                 let interval_u32 = interval as u32;
-                timer.delay(prev_tick + interval_u32 - now_tick);
+                // timer.delay(prev_tick + interval_u32 - now_tick);
 
                 if ACCELERATE_FRAME {
                     prev_tick = timer.ticks();
@@ -150,6 +150,9 @@ impl<'a> MainLoop<'a> {
 
             try!(game.draw()
                 .chain_err(|| "failed to draw a frame"));
+
+            let end_tick = timer.ticks();
+            println!("framerate: {} fps", 1000. / ((end_tick - now_tick) as f32));
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
