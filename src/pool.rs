@@ -3,7 +3,8 @@
 
 extern crate itertools;
 
-use std::slice::Iter;
+use std::iter::Chain;
+use std::slice::{Iter, IterMut};
 
 /// An entity pool of a fixed size.
 pub struct Pool<T> {
@@ -58,5 +59,52 @@ impl<T> Pool<T> {
     /// An iterator over in-use objects.
     pub fn iter(&self) -> Iter<T> {
         self.in_use.iter()
+    }
+
+    /// An iterator over in-use objects.
+    pub fn iter_mut(&mut self) -> IterMut<T> {
+        self.in_use.iter_mut()
+    }
+
+    /// An iterator over all objects.
+    pub fn iter_all(&self) -> Chain<Iter<T>, Iter<T>> {
+        self.in_use.iter()
+            .chain(self.pool.iter())
+    }
+
+    /// An iterator over all objects.
+    pub fn iter_all_mut(&mut self) -> Chain<IterMut<T>, IterMut<T>> {
+        self.in_use.iter_mut()
+            .chain(self.pool.iter_mut())
+    }
+
+    /// Run a function for each in-use object and return expired objects to the pool.
+    pub fn run<F>(&mut self, mut func: F)
+        where F: FnMut(&mut T) -> bool,
+    {
+        let mut idx = 0;
+        while idx < self.in_use.len() {
+            if func(&mut self.in_use[idx]) {
+                let item = self.in_use.swap_remove(idx);
+                self.pool.push(item);
+            } else {
+                idx += 1;
+            }
+        }
+    }
+
+    /// Expire objects which may be returned to the pool.
+    pub fn expire<F>(&mut self, pred: F)
+        where F: Fn(&T) -> bool,
+    {
+        let mut idx = 0;
+        while idx < self.in_use.len() {
+            if pred(&self.in_use[idx]) {
+                let item = self.in_use.swap_remove(idx);
+                self.pool.push(item);
+            } else {
+                idx += 1;
+            }
+        }
     }
 }
