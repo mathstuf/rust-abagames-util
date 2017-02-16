@@ -31,20 +31,20 @@ impl AudioData {
     fn new(asset_dir: &Path) -> Result<Self> {
         let sounds_dir = asset_dir.join("sounds");
 
-        let read_dir = try!(fs::read_dir(sounds_dir.join("musics"))
-            .chain_err(|| "failed to list the music directory"));
-        let music = try!(read_dir.map(|entry| {
-            let entry = try!(entry.chain_err(|| "failed to fetch a directory entry"));
-            let music = try!(Music::from_file(&entry.path()).map_err(|err| {
+        let read_dir = fs::read_dir(sounds_dir.join("musics"))
+            .chain_err(|| "failed to list the music directory")?;
+        let music = read_dir.map(|entry| {
+            let entry = entry.chain_err(|| "failed to fetch a directory entry")?;
+            let music = Music::from_file(&entry.path()).map_err(|err| {
                 ErrorKind::Msg(format!("failed to read the music file {}: {:?}",
                                        entry.path().to_string_lossy(),
                                        err))
-            }));
+            })?;
             let file_name = entry.file_name().to_string_lossy().into_owned();
 
             Ok((file_name, music))
         })
-        .collect::<Result<HashMap<_, _>>>());
+        .collect::<Result<HashMap<_, _>>>()?;
 
         Ok(AudioData {
             path: sounds_dir,
@@ -58,7 +58,7 @@ impl AudioData {
 
     fn load_sfx(&mut self, name: &str, channel: i32) -> Result<()> {
         let path = self.path.join("chunks").join(name);
-        let chunk = try!(Chunk::from_file(&path));
+        let chunk = Chunk::from_file(&path)?;
 
         self.sfx.insert(name.to_string(), (chunk, mixer::channel(channel)));
 
@@ -112,11 +112,11 @@ impl<'a> Audio<'a> {
     /// Sound effects are loaded from the `sounds/chunks` subdirectory and music from the
     /// `sounds/musics` subdirectory.
     pub fn new(asset_dir: &Path) -> Result<Self> {
-        try!(mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS));
+        mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS)?;
         mixer::allocate_channels(CHANNELS);
 
         Ok(Audio {
-            data: try!(AudioData::new(asset_dir)),
+            data: AudioData::new(asset_dir)?,
             music_enabled: true,
             sfx_enabled: true,
 
@@ -129,8 +129,8 @@ impl<'a> Audio<'a> {
         where I: Iterator<Item = (N, i32)>,
               N: AsRef<str>,
     {
-        try!(sfx.map(|(ref name, channel)| self.data.load_sfx(name.as_ref(), channel))
-            .collect::<Result<Vec<_>>>());
+        sfx.map(|(ref name, channel)| self.data.load_sfx(name.as_ref(), channel))
+            .collect::<Result<Vec<_>>>()?;
 
         Ok(self)
     }

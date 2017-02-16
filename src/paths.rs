@@ -21,7 +21,7 @@ impl Paths {
     ///
     /// This allows a binary to be run in both an install tree and a build tree.
     pub fn new<P: AsRef<Path>>(source_path: P) -> io::Result<Self> {
-        let (base_dir, is_install) = try!(Self::base_path_dir(source_path.as_ref()));
+        let (base_dir, is_install) = Self::base_path_dir(source_path.as_ref())?;
 
         if is_install {
             Self::from_install(base_dir)
@@ -39,7 +39,7 @@ impl Paths {
     }
 
     fn from_install(path: PathBuf) -> io::Result<Self> {
-        let exe_path = try!(env::current_exe());
+        let exe_path = env::current_exe()?;
         let appname_osstr = exe_path.file_name().unwrap();
         let appname = appname_osstr.to_string_lossy();
 
@@ -108,7 +108,7 @@ impl Paths {
     }
 
     fn base_path_dir(source_path: &Path) -> io::Result<(PathBuf, bool)> {
-        let mut exe_path = try!(env::current_exe());
+        let mut exe_path = env::current_exe()?;
 
         exe_path.pop(); // build config (build) or bin (install)
 

@@ -85,14 +85,14 @@ impl<'a> MainLoop<'a> {
 
     /// Run a game to completion.
     pub fn run<G: Game>(&self, mut game: G) -> Result<()> {
-        let mut pump = try!(self.sdl_context.event_pump());
-        let mut timer = try!(self.sdl_context.timer());
+        let mut pump = self.sdl_context.event_pump()?;
+        let mut timer = self.sdl_context.timer()?;
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
 
-        try!(game.init()
-            .chain_err(|| "failed to initialize the game"));
+        game.init()
+            .chain_err(|| "failed to initialize the game")?;
 
         loop {
             let event = pump.poll_event();
@@ -101,8 +101,8 @@ impl<'a> MainLoop<'a> {
                 if let &Event::Quit { .. } = &event {
                     true
                 } else {
-                    try!(game.handle_event(&event)
-                        .chain_err(|| "failed to handle an event"))
+                    game.handle_event(&event)
+                        .chain_err(|| "failed to handle an event")?
                 }
             } else {
                 false
@@ -134,9 +134,9 @@ impl<'a> MainLoop<'a> {
 
             let input = Input::new(&pump);
 
-            let step_result = try!((0..frames)
-                .map(|_| Ok(try!(game.step(&input).chain_err(|| "failed to step the game"))))
-                .collect::<Result<Vec<_>>>())
+            let step_result = (0..frames)
+                .map(|_| Ok(game.step(&input).chain_err(|| "failed to step the game")?))
+                .collect::<Result<Vec<_>>>()?
                 .into_iter()
                 .fold(StepResult::Slowdown(0.), StepResult::merge);
 
@@ -148,8 +148,8 @@ impl<'a> MainLoop<'a> {
                 StepResult::Slowdown(s) => s,
             };
 
-            try!(game.draw()
-                .chain_err(|| "failed to draw a frame"));
+            game.draw()
+                .chain_err(|| "failed to draw a frame")?;
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
@@ -160,8 +160,8 @@ impl<'a> MainLoop<'a> {
             }
         }
 
-        try!(game.quit()
-            .chain_err(|| "failed to quit the game"));
+        game.quit()
+            .chain_err(|| "failed to quit the game")?;
 
         Ok(())
     }

@@ -58,9 +58,9 @@ impl SdlBuilder {
               P: AsRef<Path>,
     {
         Ok(SdlBuilder {
-            sdl: try!(sdl2::init()),
+            sdl: sdl2::init()?,
             sdl_mixer_context: None,
-            paths: try!(Paths::new(source_path).chain_err(|| "failed to set up paths")),
+            paths: Paths::new(source_path).chain_err(|| "failed to set up paths")?,
 
             audio: true,
 
@@ -91,15 +91,15 @@ impl SdlBuilder {
     /// Construct the subsystem structure and the main loop.
     pub fn build<'a>(&'a mut self) -> Result<(SdlInfo<'a>, MainLoop<'a>)> {
         let audio = if self.audio {
-            try!(self.sdl.audio());
-            self.sdl_mixer_context = Some(try!(mixer::init(mixer::INIT_OGG)));
-            Some(try!(Audio::new(&self.paths.asset_dir)))
+            self.sdl.audio()?;
+            self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG)?);
+            Some(Audio::new(&self.paths.asset_dir)?)
         } else {
             None
         };
 
         let mainloop = MainLoop::new(&self.sdl);
-        let video = try!(Video::new(&self.sdl, &self.caption, &self.size, self.windowed));
+        let video = Video::new(&self.sdl, &self.caption, &self.size, self.windowed)?;
 
         let info = SdlInfo {
             audio: audio,

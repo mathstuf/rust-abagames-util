@@ -97,15 +97,15 @@ impl<'a> Video<'a> {
     /// This creates the window and rendering surface for the video subsystem as well.
     pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool)
                -> Result<Self> {
-        let video = try!(sdl_context.video()
-            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {:?}", err))));
+        let video = sdl_context.video()
+            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {:?}", err)))?;
 
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_flags().debug().set();
         gl_attr.set_context_version(3, 2);
-        try!(video.gl_load_library_default()
-            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err))));
+        video.gl_load_library_default()
+            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err)))?;
 
         let &(width, height) = size;
 
@@ -122,14 +122,14 @@ impl<'a> Video<'a> {
         }
 
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
-            try!(gfx_window_sdl::init(window)
-                .map_err(|err| ErrorKind::Msg(format!("failed to initialize the video subsystem: {:?}", err))));
+            gfx_window_sdl::init(window)
+                .map_err(|err| ErrorKind::Msg(format!("failed to initialize the video subsystem: {:?}", err)))?;
 
-        let mut renderer = try!(window.renderer()
+        let mut renderer = window.renderer()
             .build()
-            .chain_err(|| "failed to build a renderer"));
-        try!(renderer.set_logical_size(width, height)
-            .chain_err(|| "failed to set the logical window size"));
+            .chain_err(|| "failed to build a renderer")?;
+        renderer.set_logical_size(width, height)
+            .chain_err(|| "failed to set the logical window size")?;
         let window = renderer.into_window().unwrap();
 
         window.gl_make_current(&gl_context).unwrap();
