@@ -36,8 +36,8 @@ impl AudioData {
         let music = try!(read_dir.map(|entry| {
             let entry = try!(entry.chain_err(|| "failed to fetch a directory entry"));
             let music = try!(Music::from_file(&entry.path()).map_err(|err| {
-                ErrorKind::Msg(format!("failed to read the music file {:?}: {}",
-                                       entry.path(),
+                ErrorKind::Msg(format!("failed to read the music file {}: {:?}",
+                                       entry.path().to_string_lossy(),
                                        err))
             }));
             let file_name = entry.file_name().to_string_lossy().into_owned();

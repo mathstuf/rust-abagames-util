@@ -98,14 +98,14 @@ impl<'a> Video<'a> {
     pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool)
                -> Result<Self> {
         let video = try!(sdl_context.video()
-            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {}", err))));
+            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {:?}", err))));
 
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_flags().debug().set();
         gl_attr.set_context_version(3, 2);
         try!(video.gl_load_library_default()
-            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {}", err))));
+            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err))));
 
         let &(width, height) = size;
 
@@ -123,7 +123,7 @@ impl<'a> Video<'a> {
 
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
             try!(gfx_window_sdl::init(window)
-                .map_err(|err| ErrorKind::Msg(format!("failed to initialize the video subsystem: {}", err))));
+                .map_err(|err| ErrorKind::Msg(format!("failed to initialize the video subsystem: {:?}", err))));
 
         let mut renderer = try!(window.renderer()
             .build()
