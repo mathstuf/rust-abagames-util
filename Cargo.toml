@@ -17,4 +17,4 @@ gfx_window_sdl = "~0.5"
 itertools = "~0.5"
 mersenne_twister = "~1.0"
 rand = "~0.3"
-sdl2 = { version = "~0.28", features = ["mixer", "gfx"] }
+sdl2 = { version = "~0.28", features = ["mixer"] }
