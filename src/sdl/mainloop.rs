@@ -10,7 +10,7 @@ extern crate sdl2;
 use self::sdl2::Sdl;
 pub use self::sdl2::event::Event;
 
-use super::input::Input;
+use sdl::input::Input;
 
 use std::error;
 use std::result;

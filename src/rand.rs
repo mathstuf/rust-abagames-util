@@ -77,7 +77,7 @@ mod test {
     extern crate itertools;
     use self::itertools::Itertools;
 
-    use super::Rand;
+    use rand::Rand;
 
     use std::fmt::Debug;
 

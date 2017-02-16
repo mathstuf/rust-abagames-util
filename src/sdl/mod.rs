@@ -5,7 +5,7 @@ extern crate sdl2;
 use self::sdl2::Sdl;
 use self::sdl2::mixer::{self, Sdl2MixerContext};
 
-use super::paths::Paths;
+use paths::Paths;
 
 pub mod audio;
 pub mod input;

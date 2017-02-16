@@ -76,7 +76,7 @@ pub fn wrap_dec_by<T>(value: T, max: T, step: T) -> T
 
 #[cfg(test)]
 mod test {
-    use super::*;
+    use math::{wrap_dec, wrap_dec_by, wrap_inc, wrap_inc_by};
 
     #[test]
     fn test_wrap_inc() {
