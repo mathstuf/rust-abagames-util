@@ -6,8 +6,8 @@
 //! This module contains utilities to assist in loading any playing audio including background
 //! music and sound effects.
 
-extern crate sdl2_mixer;
-use self::sdl2_mixer::{AudioFormat, Channel, Chunk, Music};
+extern crate sdl2;
+use self::sdl2::mixer::{self, AudioFormat, Channel, Chunk, Music};
 
 use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;
@@ -56,16 +56,16 @@ impl AudioData {
         })
     }
 
-    fn load_sfx(&mut self, name: &str, channel: isize) -> Result<()> {
+    fn load_sfx(&mut self, name: &str, channel: i32) -> Result<()> {
         let path = self.path.join("chunks").join(name);
         let chunk = try!(Chunk::from_file(&path));
 
-        self.sfx.insert(name.to_string(), (chunk, sdl2_mixer::channel(channel)));
+        self.sfx.insert(name.to_string(), (chunk, mixer::channel(channel)));
 
         Ok(())
     }
 
-    fn play_music(&self, name: &str, count: isize) -> bool {
+    fn play_music(&self, name: &str, count: i32) -> bool {
         self.music
             .get(name)
             .map(|music| music.play(count))
@@ -99,12 +99,12 @@ pub struct Audio<'a> {
     _phantom: PhantomData<&'a str>,
 }
 
-static FREQUENCY: isize = 44100;
-static FORMAT: AudioFormat = sdl2_mixer::AUDIO_S16;
-static CHANNELS: isize = 1;
-static BUFFERS: isize = 4096;
-static PLAY_UNLIMITED: isize = -1;
-static FADE_OUT_TIME: isize = 1280;
+static FREQUENCY: i32 = 44100;
+static FORMAT: AudioFormat = mixer::AUDIO_S16;
+static CHANNELS: i32 = 1;
+static BUFFERS: i32 = 4096;
+static PLAY_UNLIMITED: i32 = -1;
+static FADE_OUT_TIME: i32 = 1280;
 
 impl<'a> Audio<'a> {
     /// Load all audio files from a directory.
@@ -112,8 +112,8 @@ impl<'a> Audio<'a> {
     /// Sound effects are loaded from the `sounds/chunks` subdirectory and music from the
     /// `sounds/musics` subdirectory.
     pub fn new(asset_dir: &Path) -> Result<Self> {
-        try!(sdl2_mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS));
-        sdl2_mixer::allocate_channels(CHANNELS);
+        try!(mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS));
+        mixer::allocate_channels(CHANNELS);
 
         Ok(Audio {
             data: try!(AudioData::new(asset_dir)),
@@ -126,7 +126,7 @@ impl<'a> Audio<'a> {
 
     /// Load sound effects for playing on specific channels.
     pub fn load_sfx<I, N>(&mut self, sfx: I) -> Result<&mut Self>
-        where I: Iterator<Item = (N, isize)>,
+        where I: Iterator<Item = (N, i32)>,
               N: AsRef<str>,
     {
         try!(sfx.map(|(ref name, channel)| self.data.load_sfx(name.as_ref(), channel))

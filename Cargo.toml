@@ -9,17 +9,12 @@ homepage = "https://github.com/mathstuf/rust-abagames-util"
 
 [dependencies]
 cgmath = "~0.12"
-chrono = "~0.2"
-error-chain = "~0.7"
-gfx = { git = "https://github.com/gfx-rs/gfx" }
-gfx_device_gl = { git = "https://github.com/gfx-rs/gfx" }
-gfx_window_sdl = { git = "https://github.com/gfx-rs/gfx" }
+chrono = "~0.3"
+error-chain = "~0.9"
+gfx = "~0.14"
+gfx_device_gl = "~0.13"
+gfx_window_sdl = "~0.5"
 itertools = "~0.5"
-mersenne_twister = "~0.3"
+mersenne_twister = "~1.0"
 rand = "~0.3"
-sdl2 = "~0.27"
-#sdl2_mixer = "~0.27"
-
-[dependencies.sdl2_mixer]
-git = "https://github.com/mathstuf/rust-sdl2_mixer"
-branch = "support-0.27"
+sdl2 = { version = "~0.28", features = ["mixer", "gfx"] }

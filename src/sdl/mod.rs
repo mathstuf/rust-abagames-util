@@ -3,9 +3,7 @@
 
 extern crate sdl2;
 use self::sdl2::Sdl;
-
-extern crate sdl2_mixer;
-use self::sdl2_mixer::Sdl2MixerContext;
+use self::sdl2::mixer::{self, Sdl2MixerContext};
 
 use super::paths::Paths;
 
@@ -94,7 +92,7 @@ impl SdlBuilder {
     pub fn build<'a>(&'a mut self) -> Result<(SdlInfo<'a>, MainLoop<'a>)> {
         let audio = if self.audio {
             try!(self.sdl.audio());
-            self.sdl_mixer_context = Some(try!(sdl2_mixer::init(sdl2_mixer::INIT_OGG)));
+            self.sdl_mixer_context = Some(try!(mixer::init(mixer::INIT_OGG)));
             Some(try!(Audio::new(&self.paths.asset_dir)))
         } else {
             None
