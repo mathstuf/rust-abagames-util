@@ -6,6 +6,15 @@ extern crate itertools;
 use std::iter::Chain;
 use std::slice::{Iter, IterMut};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+/// Whether to keep or remove a pool entity after stepping it.
+pub enum PoolRemoval {
+    /// Keep the entity in the pool.
+    Keep,
+    /// Remove the entity from the pool.
+    Remove,
+}
+
 /// An entity pool of a fixed size.
 pub struct Pool<T> {
     pool: Vec<T>,
@@ -80,11 +89,11 @@ impl<T> Pool<T> {
 
     /// Run a function for each in-use object and return expired objects to the pool.
     pub fn run<F>(&mut self, mut func: F)
-        where F: FnMut(&mut T) -> bool,
+        where F: FnMut(&mut T) -> PoolRemoval,
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
-            if func(&mut self.in_use[idx]) {
+            if func(&mut self.in_use[idx]) == PoolRemoval::Remove {
                 let item = self.in_use.swap_remove(idx);
                 self.pool.push(item);
             } else {
@@ -95,11 +104,11 @@ impl<T> Pool<T> {
 
     /// Expire objects which may be returned to the pool.
     pub fn expire<F>(&mut self, pred: F)
-        where F: Fn(&T) -> bool,
+        where F: Fn(&T) -> PoolRemoval,
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
-            if pred(&self.in_use[idx]) {
+            if pred(&self.in_use[idx]) == PoolRemoval::Remove {
                 let item = self.in_use.swap_remove(idx);
                 self.pool.push(item);
             } else {
