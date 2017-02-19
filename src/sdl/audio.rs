@@ -18,16 +18,22 @@ use std::path::{Path, PathBuf};
 
 error_chain! {}
 
+/// Audio data information and management.
 struct AudioData {
+    /// The path to the audio data.
     path: PathBuf,
 
+    /// Music files.
     music: HashMap<String, Music>,
 
+    /// Sound effect files.
     sfx: HashMap<String, (Chunk, Channel)>,
+    /// Sound effects queued for playing.
     queued_sfx: HashSet<&'static str>,
 }
 
 impl AudioData {
+    /// Discover audio data in a directory.
     fn new(asset_dir: &Path) -> Result<Self> {
         let sounds_dir = asset_dir.join("sounds");
 
@@ -56,6 +62,7 @@ impl AudioData {
         })
     }
 
+    /// Load a sound effect.
     fn load_sfx(&mut self, name: &str, channel: i32) -> Result<()> {
         let path = self.path.join("chunks").join(name);
         let chunk = Chunk::from_file(&path)?;
@@ -65,6 +72,7 @@ impl AudioData {
         Ok(())
     }
 
+    /// Play a music file.
     fn play_music(&self, name: &str, count: i32) -> bool {
         self.music
             .get(name)
@@ -72,10 +80,12 @@ impl AudioData {
             .is_some()
     }
 
+    /// Mark a sound effect for playing when requested.
     fn mark_sfx(&mut self, name: &'static str) -> bool {
         self.queued_sfx.insert(name)
     }
 
+    /// Play queued sound effects.
     fn play_sfx(&mut self) -> bool {
         let sfx_to_play = mem::replace(&mut self.queued_sfx, HashSet::new());
 
@@ -92,18 +102,28 @@ impl AudioData {
 
 /// Audio support.
 pub struct Audio<'a> {
+    /// Audio data.
     data: AudioData,
+    /// Whether music is enabled or not.
     music_enabled: bool,
+    /// Whether sound effects is enabled or not.
     sfx_enabled: bool,
 
+    #[doc(hidden)]
     _phantom: PhantomData<&'a str>,
 }
 
+/// The frequency to play audio at.
 static FREQUENCY: i32 = 44100;
+/// The format of the audio.
 static FORMAT: AudioFormat = mixer::AUDIO_S16;
+/// The number of channels to play.
 static CHANNELS: i32 = 1;
+/// The size of the audio buffers.
 static BUFFERS: i32 = 4096;
+/// The number of times to repeat audio infinitely.
 static PLAY_UNLIMITED: i32 = -1;
+/// The amount of time, in milliseconds, over which to fade out music.
 static FADE_OUT_TIME: i32 = 1280;
 
 impl<'a> Audio<'a> {

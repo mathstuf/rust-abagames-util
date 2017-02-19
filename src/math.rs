@@ -18,6 +18,7 @@ pub fn fast_distance(v1: &Vector2<f32>, v2: &Vector2<f32>) -> f32 {
     }
 }
 
+/// Return `true` if a value is between two bounds (inclusive).
 fn between<T>(low: T, expect: T, high: T) -> bool
     where T: PartialOrd,
 {

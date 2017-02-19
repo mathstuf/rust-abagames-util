@@ -17,7 +17,9 @@ pub enum PoolRemoval {
 
 /// An entity pool of a fixed size.
 pub struct Pool<T> {
+    /// The unused objects.
     pool: Vec<T>,
+    /// The in-use objects.
     in_use: Vec<T>,
 }
 
@@ -34,6 +36,7 @@ impl<T> Pool<T> {
         }
     }
 
+    /// Get an object from the pool.
     fn pop(&mut self) -> Option<T> {
         self.pool.pop()
     }

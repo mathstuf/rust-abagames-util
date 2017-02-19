@@ -30,6 +30,7 @@ impl Paths {
         }
     }
 
+    /// Paths based on the build directory.
     fn from_build(path: PathBuf) -> io::Result<Self> {
         Ok(Paths {
             config_dir: path.clone(),
@@ -38,6 +39,7 @@ impl Paths {
         })
     }
 
+    /// Paths based on the install directory.
     fn from_install(path: PathBuf) -> io::Result<Self> {
         let exe_path = env::current_exe()?;
         let appname_osstr = exe_path.file_name().unwrap();
@@ -56,6 +58,7 @@ impl Paths {
     }
 
     #[cfg(windows)]
+    /// The data directory on Windows.
     fn data_dir(appname: &str) -> PathBuf {
         let mut appdata_dir = PathBuf::from(env::var("APPDATA")
             .map(PathBuf::from)
@@ -69,11 +72,13 @@ impl Paths {
     }
 
     #[cfg(windows)]
+    /// The asset directory on Windows.
     fn asset_dir(path: &Path, _: &str) -> PathBuf {
         path.join("share")
     }
 
     #[cfg(not(any(windows)))]
+    /// The configuration directory on non-Windows platforms.
     fn config_dir(appname: &str) -> PathBuf {
         let mut config_dir = PathBuf::from(env::var("XDG_CONFIG_HOME")
             .map(PathBuf::from)
@@ -87,6 +92,7 @@ impl Paths {
     }
 
     #[cfg(not(any(windows)))]
+    /// The data directory on non-Windows platforms.
     fn data_dir(appname: &str) -> PathBuf {
         let mut data_dir = PathBuf::from(env::var("XDG_DATA_HOME")
             .map(PathBuf::from)
@@ -101,12 +107,14 @@ impl Paths {
     }
 
     #[cfg(not(any(windows)))]
+    /// The asset directory on non-Windows platforms.
     fn asset_dir(path: &Path, appname: &str) -> PathBuf {
         let mut share_dir = path.join("share");
         share_dir.push(appname);
         share_dir
     }
 
+    /// Return the base path for the installation.
     fn base_path_dir(source_path: &Path) -> io::Result<(PathBuf, bool)> {
         let mut exe_path = env::current_exe()?;
 
