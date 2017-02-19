@@ -24,13 +24,9 @@ fn between<T>(low: T, expect: T, high: T) -> bool
     low <= expect && expect <= high
 }
 
-fn contains_raw(v1: &Vector2<f32>, x: f32, y: f32, radius: f32) -> bool {
-    between(-v1.x * radius, x, v1.x * radius) && between(-v1.y * radius, y, v1.y * radius)
-}
-
 /// Determine whether `v2` is within `radius` units of `v1`.
 pub fn contains(v1: &Vector2<f32>, v2: &Vector2<f32>, radius: f32) -> bool {
-    contains_raw(v1, v2.x, v2.y, radius)
+    between(-v1.x * radius, v2.x, v1.x * radius) && between(-v1.y * radius, v2.y, v1.y * radius)
 }
 
 #[inline]
