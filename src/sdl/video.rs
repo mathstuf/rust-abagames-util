@@ -138,12 +138,12 @@ impl<'a> Video<'a> {
 
         sdl_context.mouse().show_cursor(false);
 
-        let (width, height) = window.size();
+        let (win_width, win_height) = window.size();
 
         let encoder = factory.create_command_buffer().into();
 
         Ok(Video {
-            perspective_matrix: Self::calc_perspective_matrix(width, height),
+            perspective_matrix: Self::calc_perspective_matrix(win_width, win_height),
             orthographic_matrix: Self::calc_orthographic_matrix(),
 
             window: window,
