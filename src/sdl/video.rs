@@ -130,9 +130,9 @@ impl<'a> Video<'a> {
             .chain_err(|| "failed to build a renderer")?;
         renderer.set_logical_size(width, height)
             .chain_err(|| "failed to set the logical window size")?;
-        let window = renderer.into_window().unwrap();
+        let window = renderer.into_window().expect("failed to create a render window");
 
-        window.gl_make_current(&gl_context).unwrap();
+        window.gl_make_current(&gl_context).expect("failed to make an OpenGL context");
 
         hint::set("SDL_HINT_RENDER_SCALE_QUALITY", "linear");
 

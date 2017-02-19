@@ -207,7 +207,7 @@ impl<'a> Audio<'a> {
 
     /// Fade out the current music.
     pub fn fade(&self) {
-        Music::fade_out(FADE_OUT_TIME).unwrap()
+        Music::fade_out(FADE_OUT_TIME).expect("fading out should work")
     }
 
     /// Stop playing all music.

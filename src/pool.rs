@@ -59,7 +59,7 @@ impl<T> Pool<T> {
             self.in_use.last_mut()
         } else {
             self.in_use.first_mut()
-        }.unwrap()
+        }.expect("at least one object should be available")
     }
 
     /// Clears the pool of all objects.

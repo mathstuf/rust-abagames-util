@@ -42,7 +42,8 @@ impl Paths {
     /// Paths based on the install directory.
     fn from_install(path: PathBuf) -> io::Result<Self> {
         let exe_path = env::current_exe()?;
-        let appname_osstr = exe_path.file_name().unwrap();
+        let appname_osstr = exe_path.file_name()
+            .expect("there should be a filename on the executable");
         let appname = appname_osstr.to_string_lossy();
 
         Ok(Paths {
@@ -83,7 +84,8 @@ impl Paths {
         let mut config_dir = PathBuf::from(env::var("XDG_CONFIG_HOME")
             .map(PathBuf::from)
             .unwrap_or_else(|_| {
-                let mut home = env::home_dir().unwrap();
+                let mut home = env::home_dir()
+                    .expect("a home directory is required");
                 home.push(".config");
                 home
             }));
@@ -97,7 +99,8 @@ impl Paths {
         let mut data_dir = PathBuf::from(env::var("XDG_DATA_HOME")
             .map(PathBuf::from)
             .unwrap_or_else(|_| {
-                let mut home = env::home_dir().unwrap();
+                let mut home = env::home_dir()
+                    .expect("a home directory is required");
                 home.push(".local");
                 home.push("share");
                 home
@@ -120,7 +123,8 @@ impl Paths {
 
         exe_path.pop(); // build config (build) or bin (install)
 
-        if exe_path.file_name().unwrap() == "bin" {
+        if "bin" == exe_path.file_name()
+            .expect("the executable path should have a parent directory") {
             // In an install tree.
             exe_path.pop(); // install root
 
