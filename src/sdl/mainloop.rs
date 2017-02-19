@@ -79,7 +79,7 @@ impl<'a> MainLoop<'a> {
     /// Create a new main loop from and SDL context.
     pub fn new(sdl_context: &'a Sdl) -> Self {
         MainLoop {
-            sdl_context: &sdl_context,
+            sdl_context: sdl_context,
         }
     }
 
@@ -98,7 +98,7 @@ impl<'a> MainLoop<'a> {
             let event = pump.poll_event();
 
             let mut is_done = if let Some(event) = event {
-                if let &Event::Quit { .. } = &event {
+                if let Event::Quit { .. } = event {
                     true
                 } else {
                     game.handle_event(&event)

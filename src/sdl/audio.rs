@@ -93,7 +93,7 @@ impl AudioData {
             .map(|&name| {
                 self.sfx
                     .get(name)
-                    .map(|&(ref sfx, channel)| channel.play(&sfx, 0))
+                    .map(|&(ref sfx, channel)| channel.play(sfx, 0))
                     .is_some()
             })
             .all(|b| b)
