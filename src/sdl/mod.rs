@@ -89,7 +89,7 @@ impl SdlBuilder {
     }
 
     /// Construct the subsystem structure and the main loop.
-    pub fn build<'a>(&'a mut self) -> Result<(SdlInfo<'a>, MainLoop<'a>)> {
+    pub fn build(&mut self) -> Result<(SdlInfo, MainLoop)> {
         let audio = if self.audio {
             self.sdl.audio()?;
             self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG)?);
