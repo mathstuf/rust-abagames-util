@@ -203,8 +203,8 @@ impl<'a> Video<'a> {
 
         EncoderDrawContext {
             context: EncoderContext {
-                perspective_matrix: self.perspective_matrix.clone(),
-                orthographic_matrix: self.orthographic_matrix.clone(),
+                perspective_matrix: self.perspective_matrix,
+                orthographic_matrix: self.orthographic_matrix,
                 encoder: &mut self.encoder,
             },
             device: &mut self.device,
