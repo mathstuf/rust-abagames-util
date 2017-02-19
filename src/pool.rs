@@ -28,6 +28,8 @@ impl<T> Pool<T> {
     pub fn new<F>(size: usize, ctor: F) -> Self
         where F: Fn() -> T,
     {
+        assert_ne!(size, 0);
+
         Pool {
             pool: itertools::repeat_call(ctor)
                 .take(size)
