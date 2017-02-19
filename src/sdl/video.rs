@@ -197,9 +197,9 @@ impl<'a> Video<'a> {
 
     /// The context for the current state of the video subsystem.
     pub fn context(&mut self) -> EncoderDrawContext<Resources, GLCommandBuffer, GLDevice> {
-        self.encoder.clear(&mut self.view, CLEAR_COLOR);
-        self.encoder.clear_depth(&mut self.depth_stencil_view, 0.);
-        self.encoder.clear_stencil(&mut self.depth_stencil_view, 0);
+        self.encoder.clear(&self.view, CLEAR_COLOR);
+        self.encoder.clear_depth(&self.depth_stencil_view, 0.);
+        self.encoder.clear_stencil(&self.depth_stencil_view, 0);
 
         EncoderDrawContext {
             context: EncoderContext {
