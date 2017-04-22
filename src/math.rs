@@ -5,6 +5,18 @@ use crates::cgmath::{One, Vector2};
 
 use std::ops::{Add, Sub};
 
+/// Compute a Manhattan between a point and the origin.
+pub fn fast_distance_origin(v: Vector2<f32>) -> f32 {
+    let ax = v.x.abs();
+    let ay = v.y.abs();
+
+    if ax < ay {
+        ay + ax / 2.
+    } else {
+        ax + ay / 2.
+    }
+}
+
 /// Compute a Manhattan distance between two points.
 pub fn fast_distance(v1: Vector2<f32>, v2: Vector2<f32>) -> f32 {
     let ax = (v1.x - v2.x).abs();
