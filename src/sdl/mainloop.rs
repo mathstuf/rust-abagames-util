@@ -6,9 +6,8 @@
 //! This module contains the logic for the main loop of a game and a trait which is used by the
 //! loop.
 
-extern crate sdl2;
-use self::sdl2::Sdl;
-pub use self::sdl2::event::Event;
+use crates::sdl2::Sdl;
+pub use crates::sdl2::event::Event;
 
 use sdl::input::Input;
 

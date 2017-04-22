@@ -6,8 +6,7 @@
 //! This module contains utilities to assist in loading any playing audio including background
 //! music and sound effects.
 
-extern crate sdl2;
-use self::sdl2::mixer::{self, AudioFormat, Channel, Chunk, Music};
+use crates::sdl2::mixer::{self, AudioFormat, Channel, Chunk, Music};
 
 use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;

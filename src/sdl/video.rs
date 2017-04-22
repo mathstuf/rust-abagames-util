@@ -7,27 +7,20 @@
 //! game. It includes bits for holding the view matrix as well as a context structure to handle
 //! flushing the rendering commands to the device.
 
-extern crate gfx;
-use self::gfx::format::{DepthStencil, Srgba8};
-use self::gfx::handle::{DepthStencilView, RenderTargetView};
-
-extern crate gfx_device_gl;
-use self::gfx_device_gl::Device as GLDevice;
-use self::gfx_device_gl::CommandBuffer as GLCommandBuffer;
-
-extern crate gfx_window_sdl;
-
-extern crate cgmath;
-use self::cgmath::Matrix4;
-
-extern crate sdl2;
-use self::sdl2::Sdl;
-use self::sdl2::hint;
-use self::sdl2::video::{GLContext, GLProfile, Window};
+use crates::gfx;
+use crates::gfx::format::{DepthStencil, Srgba8};
+use crates::gfx::handle::{DepthStencilView, RenderTargetView};
+use crates::gfx_device_gl::Device as GLDevice;
+use crates::gfx_device_gl::CommandBuffer as GLCommandBuffer;
+use crates::gfx_window_sdl;
+use crates::cgmath::{self, Matrix4};
+use crates::sdl2::Sdl;
+use crates::sdl2::hint;
+use crates::sdl2::video::{GLContext, GLProfile, Window};
 
 use std::marker::PhantomData;
 
-pub use self::gfx_device_gl::{Factory, Resources};
+pub use crates::gfx_device_gl::{Factory, Resources};
 /// The specialized encoder type for the games.
 pub type Encoder = gfx::Encoder<Resources, GLCommandBuffer>;
 

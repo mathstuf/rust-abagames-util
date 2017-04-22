@@ -1,7 +1,7 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-extern crate itertools;
+use crates::itertools;
 
 use std::iter::Chain;
 use std::slice::{Iter, IterMut};

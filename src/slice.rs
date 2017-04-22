@@ -1,8 +1,7 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-extern crate gfx;
-use self::gfx::IntoIndexBuffer;
+use crates::gfx::{self, IntoIndexBuffer};
 
 use std::iter;
 

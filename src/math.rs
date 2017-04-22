@@ -1,8 +1,7 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-extern crate cgmath;
-use self::cgmath::{One, Vector2};
+use crates::cgmath::{One, Vector2};
 
 use std::ops::{Add, Sub};
 

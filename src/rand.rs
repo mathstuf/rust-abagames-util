@@ -1,14 +1,9 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-extern crate chrono;
-use self::chrono::UTC;
-
-extern crate mersenne_twister;
-use self::mersenne_twister::MT19937;
-
-extern crate rand;
-use self::rand::{Rng, SeedableRng};
+use crates::chrono::UTC;
+use crates::mersenne_twister::MT19937;
+use crates::rand::{Rng, SeedableRng};
 
 /// Seedable and repeatable source of random numbers.
 pub struct Rand {
@@ -71,13 +66,9 @@ impl Rand {
 
 #[cfg(test)]
 mod test {
-    extern crate chrono;
-    use self::chrono::UTC;
-
-    extern crate itertools;
-    use self::itertools::Itertools;
-
-    use rand::Rand;
+    use crates::chrono::UTC;
+    use crates::itertools::Itertools;
+    use crates::rand::Rand;
 
     use std::fmt::Debug;
 

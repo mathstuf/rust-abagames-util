@@ -1,9 +1,8 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-extern crate sdl2;
-use self::sdl2::Sdl;
-use self::sdl2::mixer::{self, Sdl2MixerContext};
+use crates::sdl2::{self, Sdl};
+use crates::sdl2::mixer::{self, Sdl2MixerContext};
 
 use paths::Paths;
 
