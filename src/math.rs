@@ -6,7 +6,7 @@ use crates::cgmath::{One, Vector2};
 use std::ops::{Add, Sub};
 
 /// Compute a Manhattan distance between two points.
-pub fn fast_distance(v1: &Vector2<f32>, v2: &Vector2<f32>) -> f32 {
+pub fn fast_distance(v1: Vector2<f32>, v2: Vector2<f32>) -> f32 {
     let ax = (v1.x - v2.x).abs();
     let ay = (v1.y - v2.y).abs();
 
@@ -25,7 +25,7 @@ fn between<T>(low: T, expect: T, high: T) -> bool
 }
 
 /// Determine whether `v2` is within `radius` units of `v1`.
-pub fn contains(v1: &Vector2<f32>, v2: &Vector2<f32>, radius: f32) -> bool {
+pub fn contains(v1: Vector2<f32>, v2: Vector2<f32>, radius: f32) -> bool {
     between(-v1.x * radius, v2.x, v1.x * radius) && between(-v1.y * radius, v2.y, v1.y * radius)
 }
 
