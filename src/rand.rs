@@ -6,6 +6,7 @@ use crates::mersenne_twister::MT19937;
 use crates::rand::{Rng, SeedableRng};
 
 /// Seedable and repeatable source of random numbers.
+#[derive(Default)]
 pub struct Rand {
     twister: MT19937,
 }
