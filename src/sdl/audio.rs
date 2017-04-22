@@ -23,7 +23,7 @@ struct AudioData {
     path: PathBuf,
 
     /// Music files.
-    music: HashMap<String, Music>,
+    music: HashMap<String, Music<'static>>,
 
     /// Sound effect files.
     sfx: HashMap<String, (Chunk, Channel)>,
