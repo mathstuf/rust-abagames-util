@@ -38,6 +38,20 @@ impl<T> Pool<T> {
         }
     }
 
+    /// Create a new pool with filled with indexed objects created by a function.
+    pub fn new_indexed<F>(size: usize, ctor: F) -> Self
+        where F: Fn(usize) -> T,
+    {
+        assert_ne!(size, 0);
+
+        Pool {
+            pool: (0..size)
+                .map(ctor)
+                .collect(),
+            in_use: Vec::with_capacity(size),
+        }
+    }
+
     /// Get an object from the pool.
     fn pop(&mut self) -> Option<T> {
         self.pool.pop()
