@@ -8,7 +8,7 @@ repository = "https://github.com/mathstuf/rust-abagames-util"
 homepage = "https://github.com/mathstuf/rust-abagames-util"
 
 [dependencies]
-cgmath = "~0.13"
+cgmath = "~0.14"
 chrono = "~0.3"
 error-chain = "~0.10"
 gfx = "~0.15"
