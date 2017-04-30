@@ -112,11 +112,10 @@ impl<T> Pool<T> {
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
-            if func(&mut self.in_use[idx]) == PoolRemoval::Remove {
-                let item = self.in_use.swap_remove(idx);
-                self.pool.push(item);
-            } else {
-                idx += 1;
+            let status = func(&mut self.in_use[idx]);
+            match status {
+                PoolRemoval::Remove => self.pool.push(self.in_use.swap_remove(idx)),
+                PoolRemoval::Keep => idx += 1,
             }
         }
     }
