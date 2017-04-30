@@ -68,8 +68,9 @@ impl Rand {
 #[cfg(test)]
 mod test {
     use crates::chrono::UTC;
-    use crates::itertools::Itertools;
-    use crates::rand::Rand;
+    use crates::itertools::{self, Itertools};
+
+    use rand::Rand;
 
     use std::fmt::Debug;
 
