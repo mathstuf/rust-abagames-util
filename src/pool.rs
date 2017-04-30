@@ -23,6 +23,9 @@ pub struct Pool<T> {
     in_use: Vec<T>,
 }
 
+/// An iterator over objects within the pool.
+pub type PoolChainIter<'a, T> = Chain<Iter<'a, T>, Iter<'a, T>>;
+
 impl<T> Pool<T> {
     /// Create a new pool with filled with objects created by a function.
     pub fn new<F>(size: usize, ctor: F) -> Self
@@ -123,7 +126,7 @@ impl<T> Pool<T> {
     /// Run a function for each in-use object with access to the other objects in the pool and
     /// return expired objects to the pool.
     pub fn run_ref<F>(&mut self, mut func: F)
-        where F: FnMut(&mut T, Chain<Iter<T>, Iter<T>>) -> PoolRemoval,
+        where F: FnMut(&mut T, PoolChainIter<T>) -> PoolRemoval,
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
