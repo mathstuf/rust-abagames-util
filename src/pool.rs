@@ -120,6 +120,25 @@ impl<T> Pool<T> {
         }
     }
 
+    /// Run a function for each in-use object with access to the other objects in the pool and
+    /// return expired objects to the pool.
+    pub fn run_ref<F>(&mut self, mut func: F)
+        where F: FnMut(&mut T, Chain<Iter<T>, Iter<T>>) -> PoolRemoval,
+    {
+        let mut idx = 0;
+        while idx < self.in_use.len() {
+            let status = {
+                let (left, right) = self.in_use.split_at_mut(idx);
+                let (item, right) = right.split_first_mut().expect("expected there to be at least one item on the right");
+                func(item, left.iter().chain(right.iter()))
+            };
+            match status {
+                PoolRemoval::Remove => self.pool.push(self.in_use.swap_remove(idx)),
+                PoolRemoval::Keep => idx += 1,
+            }
+        }
+    }
+
     /// Expire objects which may be returned to the pool.
     pub fn expire<F>(&mut self, pred: F)
         where F: Fn(&T) -> PoolRemoval,
