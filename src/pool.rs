@@ -55,6 +55,7 @@ impl<T> Pool<T> {
         }
     }
 
+    #[inline]
     /// Get an object from the pool.
     fn pop(&mut self) -> Option<T> {
         self.pool.pop()
@@ -87,22 +88,26 @@ impl<T> Pool<T> {
             .extend(self.in_use.drain(..))
     }
 
+    #[inline]
     /// An iterator over in-use objects.
     pub fn iter(&self) -> Iter<T> {
         self.in_use.iter()
     }
 
+    #[inline]
     /// An iterator over in-use objects.
     pub fn iter_mut(&mut self) -> IterMut<T> {
         self.in_use.iter_mut()
     }
 
+    #[inline]
     /// An iterator over all objects.
     pub fn iter_all(&self) -> Chain<Iter<T>, Iter<T>> {
         self.in_use.iter()
             .chain(self.pool.iter())
     }
 
+    #[inline]
     /// An iterator over all objects.
     pub fn iter_all_mut(&mut self) -> Chain<IterMut<T>, IterMut<T>> {
         self.in_use.iter_mut()
