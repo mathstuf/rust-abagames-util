@@ -63,11 +63,12 @@ impl<T> Pool<T> {
 
     /// Get a free object from the pool.
     pub fn get(&mut self) -> Option<&mut T> {
-        self.pop()
-            .and_then(move |item| {
-                self.in_use.push(item);
-                self.in_use.last_mut()
-            })
+        if let Some(item) = self.pop() {
+            self.in_use.push(item);
+            self.in_use.last_mut()
+        } else {
+            None
+        }
     }
 
     /// Get an object from the pool.
