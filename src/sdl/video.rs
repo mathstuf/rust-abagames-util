@@ -31,6 +31,8 @@ pub struct EncoderContext<'a, R, C: 'a>
     where R: gfx::Resources,
           C: gfx::CommandBuffer<R>,
 {
+    /// The size of the view.
+    pub size: Vector2<u32>,
     /// The view matrix for perspective rendering.
     pub perspective_matrix: Matrix4<f32>,
     /// The view matrix for orthographic rendering.
@@ -74,6 +76,7 @@ pub struct Video<'a> {
 
     encoder: Encoder,
 
+    size: Vector2<u32>,
     perspective_matrix: Matrix4<f32>,
     orthographic_matrix: Matrix4<f32>,
 
@@ -132,6 +135,7 @@ impl<'a> Video<'a> {
         let win_size = window.size().into();
 
         Ok(Video {
+            size: win_size,
             perspective_matrix: Self::calc_perspective_matrix(win_size),
             orthographic_matrix: Self::calc_orthographic_matrix(win_size),
 
@@ -165,6 +169,7 @@ impl<'a> Video<'a> {
 
     /// Resize the window.
     pub fn resize(&mut self, size: Vector2<u32>) {
+        self.size = size;
         self.perspective_matrix = Self::calc_perspective_matrix(size);
         self.orthographic_matrix = Self::calc_orthographic_matrix(size);
     }
@@ -192,6 +197,7 @@ impl<'a> Video<'a> {
 
         EncoderDrawContext {
             context: EncoderContext {
+                size: self.size,
                 perspective_matrix: self.perspective_matrix,
                 orthographic_matrix: self.orthographic_matrix,
                 encoder: &mut self.encoder,
