@@ -7,13 +7,13 @@
 //! game. It includes bits for holding the view matrix as well as a context structure to handle
 //! flushing the rendering commands to the device.
 
+use crates::cgmath::{self, Matrix4, Vector2};
 use crates::gfx;
 use crates::gfx::format::{DepthStencil, Srgba8};
 use crates::gfx::handle::{DepthStencilView, RenderTargetView};
 use crates::gfx_device_gl::Device as GLDevice;
 use crates::gfx_device_gl::CommandBuffer as GLCommandBuffer;
 use crates::gfx_window_sdl;
-use crates::cgmath::{self, Matrix4};
 use crates::sdl2::Sdl;
 use crates::sdl2::hint;
 use crates::sdl2::video::{GLContext, GLProfile, Window};
@@ -88,7 +88,7 @@ impl<'a> Video<'a> {
     /// Create a new video structure.
     ///
     /// This creates the window and rendering surface for the video subsystem as well.
-    pub fn new(sdl_context: &Sdl, caption: &str, size: &(u32, u32), windowed: bool)
+    pub fn new(sdl_context: &Sdl, caption: &str, size: Vector2<u32>, windowed: bool)
                -> Result<Self> {
         let video = sdl_context.video()
             .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {:?}", err)))?;
@@ -100,9 +100,7 @@ impl<'a> Video<'a> {
         video.gl_load_library_default()
             .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err)))?;
 
-        let &(width, height) = size;
-
-        let mut window = video.window(caption, width, height);
+        let mut window = video.window(caption, size.x, size.y);
 
         window.opengl()
             .allow_highdpi();
@@ -121,7 +119,7 @@ impl<'a> Video<'a> {
         let mut renderer = window.renderer()
             .build()
             .chain_err(|| "failed to build a renderer")?;
-        renderer.set_logical_size(width, height)
+        renderer.set_logical_size(size.x, size.y)
             .chain_err(|| "failed to set the logical window size")?;
         let window = renderer.into_window().expect("failed to create a render window");
 
@@ -131,13 +129,13 @@ impl<'a> Video<'a> {
 
         sdl_context.mouse().show_cursor(false);
 
-        let (win_width, win_height) = window.size();
-
-        let encoder = factory.create_command_buffer().into();
+        let win_size = window.size().into();
 
         Ok(Video {
-            perspective_matrix: Self::calc_perspective_matrix(win_width, win_height),
-            orthographic_matrix: Self::calc_orthographic_matrix(),
+            perspective_matrix: Self::calc_perspective_matrix(win_size),
+            orthographic_matrix: Self::calc_orthographic_matrix(win_size),
+
+            encoder: factory.create_command_buffer().into(),
 
             window: window,
             _gl_context: gl_context,
@@ -146,14 +144,12 @@ impl<'a> Video<'a> {
             view: view,
             depth_stencil_view: depth_stencil_view,
 
-            encoder: encoder,
-
             _phantom: PhantomData,
         })
     }
 
-    fn calc_perspective_matrix(width: u32, height: u32) -> Matrix4<f32> {
-        let aspect = (height as f32) / (width as f32);
+    fn calc_perspective_matrix(size: Vector2<u32>) -> Matrix4<f32> {
+        let aspect = (size.y as f32) / (size.x as f32);
 
         cgmath::frustum(-NEAR_PLANE,
                         NEAR_PLANE,
@@ -163,14 +159,14 @@ impl<'a> Video<'a> {
                         FAR_PLANE)
     }
 
-    fn calc_orthographic_matrix() -> Matrix4<f32> {
-        // FIXME: Fix the 640x480 aspect ratio.
-        cgmath::ortho(0., 640., 480., 0., -1., 1.)
+    fn calc_orthographic_matrix(size: Vector2<u32>) -> Matrix4<f32> {
+        cgmath::ortho(0., size.x as f32, size.y as f32, 0., -1., 1.)
     }
 
     /// Resize the window.
-    pub fn resize(&mut self, width: u32, height: u32) {
-        self.perspective_matrix = Self::calc_perspective_matrix(width, height);
+    pub fn resize(&mut self, size: Vector2<u32>) {
+        self.perspective_matrix = Self::calc_perspective_matrix(size);
+        self.orthographic_matrix = Self::calc_orthographic_matrix(size);
     }
 
     /// The perspective matrix for the window.

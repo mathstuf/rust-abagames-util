@@ -1,6 +1,7 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
+use crates::cgmath::Vector2;
 use crates::sdl2::{self, Sdl};
 use crates::sdl2::mixer::{self, Sdl2MixerContext};
 
@@ -46,7 +47,7 @@ pub struct SdlBuilder {
     audio: bool,
 
     caption: String,
-    size: (u32, u32),
+    size: Vector2<u32>,
     windowed: bool,
 }
 
@@ -64,7 +65,7 @@ impl SdlBuilder {
             audio: true,
 
             caption: caption.to_string(),
-            size: (640, 480),
+            size: (640, 480).into(),
             windowed: false,
         })
     }
@@ -76,7 +77,7 @@ impl SdlBuilder {
     }
 
     /// Resize the window.
-    pub fn with_size(&mut self, size: (u32, u32)) -> &mut Self {
+    pub fn with_size(&mut self, size: Vector2<u32>) -> &mut Self {
         self.size = size;
         self
     }
@@ -98,7 +99,7 @@ impl SdlBuilder {
         };
 
         let mainloop = MainLoop::new(&self.sdl);
-        let video = Video::new(&self.sdl, &self.caption, &self.size, self.windowed)?;
+        let video = Video::new(&self.sdl, &self.caption, self.size, self.windowed)?;
 
         let info = SdlInfo {
             audio: audio,
