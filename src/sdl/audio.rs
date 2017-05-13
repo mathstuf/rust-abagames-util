@@ -27,20 +27,21 @@ struct AudioData<'a> {
 
 impl<'a> AudioData<'a> {
     /// Load audio from data.
-    fn new<M, S>(music: M, sfx: S) -> Result<Self>
-        where M: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>)>,
-              S: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>, i32)>,
+    fn new<M, S, D>(music: M, sfx: S) -> Result<Self>
+        where M: IntoIterator<Item = &'a (&'a str, D)>,
+              S: IntoIterator<Item = &'a (&'a str, D, i32)>,
+              D: LoaderRWops<'a> + 'a,
     {
         Ok(AudioData {
             music: music.into_iter()
-                .map(|(name, rwops)| {
-                    Ok((name, rwops.load_music()?))
+                .map(|&(name, ref loader)| {
+                    Ok((name, loader.load_music()?))
                 })
                 .collect::<Result<HashMap<_, _>>>()?,
 
             sfx: sfx.into_iter()
-                .map(|(name, rwops, channel)| {
-                    Ok((name, (rwops.load_wav()?, mixer::channel(channel))))
+                .map(|&(name, ref loader, channel)| {
+                    Ok((name, (loader.load_wav()?, mixer::channel(channel))))
                 })
                 .collect::<Result<HashMap<_, _>>>()?,
             queued_sfx: HashSet::new(),
@@ -100,9 +101,10 @@ static FADE_OUT_TIME: i32 = 1280;
 
 impl<'a> Audio<'a> {
     /// Load audio from data.
-    pub fn new<M, S>(music: M, sfx: S) -> Result<Self>
-        where M: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>)>,
-              S: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>, i32)>,
+    pub fn new<M, S, D>(music: M, sfx: S) -> Result<Self>
+        where M: IntoIterator<Item = &'a (&'a str, D)>,
+              S: IntoIterator<Item = &'a (&'a str, D, i32)>,
+              D: LoaderRWops<'a> + 'a,
     {
         mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS)?;
         mixer::allocate_channels(CHANNELS);
