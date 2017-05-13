@@ -3,16 +3,14 @@
 
 use crates::cgmath::Vector2;
 use crates::sdl2::{self, Sdl};
-use crates::sdl2::mixer::{self, Sdl2MixerContext};
-
-use paths::Paths;
+use crates::sdl2::mixer::{self, LoaderRWops, Sdl2MixerContext};
 
 pub mod audio;
 pub mod input;
 pub mod mainloop;
 pub mod video;
 
-use std::path::Path;
+use std::mem;
 
 pub use self::audio::Audio;
 pub use self::input::{Input, Scancode};
@@ -39,30 +37,31 @@ pub struct SdlInfo<'a> {
 }
 
 /// A builder object for the SDL context.
-pub struct SdlBuilder {
+pub struct SdlBuilder<'a> {
     sdl: Sdl,
     sdl_mixer_context: Option<Sdl2MixerContext>,
-    paths: Paths,
 
     audio: bool,
+    music_data: Vec<(&'a str, &'a LoaderRWops<'a>)>,
+    sfx_data: Vec<(&'a str, &'a LoaderRWops<'a>, i32)>,
 
     caption: String,
     size: Vector2<u32>,
     windowed: bool,
 }
 
-impl SdlBuilder {
+impl<'a> SdlBuilder<'a> {
     /// Create a new SDL structure.
-    pub fn new<C, P>(caption: C, source_path: P) -> Result<Self>
+    pub fn new<C>(caption: C) -> Result<Self>
         where C: ToString,
-              P: AsRef<Path>,
     {
         Ok(SdlBuilder {
             sdl: sdl2::init()?,
             sdl_mixer_context: None,
-            paths: Paths::new(source_path).chain_err(|| "failed to set up paths")?,
 
             audio: true,
+            music_data: Vec::new(),
+            sfx_data: Vec::new(),
 
             caption: caption.to_string(),
             size: (640, 480).into(),
@@ -88,12 +87,30 @@ impl SdlBuilder {
         self
     }
 
+    /// Load audio from data.
+    pub fn with_music<M>(&mut self, music: M) -> &mut Self
+        where M: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>)>,
+    {
+        self.music_data = music.into_iter().collect();
+        self
+    }
+
+    /// Load audio from data.
+    pub fn with_sfx<S>(&mut self, sfx: S) -> &mut Self
+        where S: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>, i32)>,
+    {
+        self.sfx_data = sfx.into_iter().collect();
+        self
+    }
+
     /// Construct the subsystem structure and the main loop.
     pub fn build(&mut self) -> Result<(SdlInfo, MainLoop)> {
         let audio = if self.audio {
             self.sdl.audio()?;
             self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG)?);
-            Some(Audio::new(&self.paths.asset_dir)?)
+            let music = mem::replace(&mut self.music_data, Vec::new());
+            let sfx = mem::replace(&mut self.sfx_data, Vec::new());
+            Some(Audio::new(music, sfx)?)
         } else {
             None
         };

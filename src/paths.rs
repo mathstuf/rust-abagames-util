@@ -12,8 +12,6 @@ pub struct Paths {
     pub config_dir: PathBuf,
     /// Directory for storing data files.
     pub data_dir: PathBuf,
-    /// Directory for storing assets.
-    pub asset_dir: PathBuf,
 }
 
 impl Paths {
@@ -24,7 +22,7 @@ impl Paths {
         let (base_dir, is_install) = Self::base_path_dir(source_path.as_ref())?;
 
         if is_install {
-            Self::from_install(base_dir)
+            Self::from_install()
         } else {
             Self::from_build(base_dir)
         }
@@ -35,12 +33,11 @@ impl Paths {
         Ok(Paths {
             config_dir: path.clone(),
             data_dir: path.clone(),
-            asset_dir: path,
         })
     }
 
     /// Paths based on the install directory.
-    fn from_install(path: PathBuf) -> io::Result<Self> {
+    fn from_install() -> io::Result<Self> {
         let exe_path = env::current_exe()?;
         let appname_osstr = exe_path.file_name()
             .expect("there should be a filename on the executable");
@@ -49,7 +46,6 @@ impl Paths {
         Ok(Paths {
             config_dir: Self::config_dir(appname.borrow()),
             data_dir: Self::data_dir(appname.borrow()),
-            asset_dir: Self::asset_dir(&path, appname.borrow()),
         })
     }
 
@@ -70,12 +66,6 @@ impl Paths {
             }));
         appdata_dir.push(appname);
         appdata_dir.push("data");
-    }
-
-    #[cfg(windows)]
-    /// The asset directory on Windows.
-    fn asset_dir(path: &Path, _: &str) -> PathBuf {
-        path.join("share")
     }
 
     #[cfg(not(any(windows)))]
@@ -107,14 +97,6 @@ impl Paths {
             }));
         data_dir.push(appname);
         data_dir
-    }
-
-    #[cfg(not(any(windows)))]
-    /// The asset directory on non-Windows platforms.
-    fn asset_dir(path: &Path, appname: &str) -> PathBuf {
-        let mut share_dir = path.join("share");
-        share_dir.push(appname);
-        share_dir
     }
 
     /// Return the base path for the installation.

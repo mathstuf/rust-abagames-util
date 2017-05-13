@@ -6,69 +6,45 @@
 //! This module contains utilities to assist in loading any playing audio including background
 //! music and sound effects.
 
-use crates::sdl2::mixer::{self, AudioFormat, Channel, Chunk, Music};
+use crates::sdl2::mixer::{self, AudioFormat, Channel, Chunk, LoaderRWops, Music};
 
 use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;
-use std::fs;
-use std::marker::PhantomData;
 use std::mem;
-use std::path::{Path, PathBuf};
 
 error_chain! {}
 
 /// Audio data information and management.
-struct AudioData {
-    /// The path to the audio data.
-    path: PathBuf,
-
+struct AudioData<'a> {
     /// Music files.
-    music: HashMap<String, Music<'static>>,
+    music: HashMap<&'a str, Music<'a>>,
 
     /// Sound effect files.
-    sfx: HashMap<String, (Chunk, Channel)>,
+    sfx: HashMap<&'a str, (Chunk, Channel)>,
     /// Sound effects queued for playing.
     queued_sfx: HashSet<&'static str>,
 }
 
-impl AudioData {
-    /// Discover audio data in a directory.
-    fn new(asset_dir: &Path) -> Result<Self> {
-        let sounds_dir = asset_dir.join("sounds");
-
-        let read_dir = fs::read_dir(sounds_dir.join("musics"))
-            .chain_err(|| "failed to list the music directory")?;
-        let music = read_dir.map(|entry| {
-            let entry = entry.chain_err(|| "failed to fetch a directory entry")?;
-            let music = Music::from_file(&entry.path()).map_err(|err| {
-                ErrorKind::Msg(format!("failed to read the music file {}: {:?}",
-                                       entry.path().to_string_lossy(),
-                                       err))
-            })?;
-            let file_name = entry.file_name().to_string_lossy().into_owned();
-
-            Ok((file_name, music))
-        })
-        .collect::<Result<HashMap<_, _>>>()?;
-
+impl<'a> AudioData<'a> {
+    /// Load audio from data.
+    fn new<M, S>(music: M, sfx: S) -> Result<Self>
+        where M: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>)>,
+              S: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>, i32)>,
+    {
         Ok(AudioData {
-            path: sounds_dir,
+            music: music.into_iter()
+                .map(|(name, rwops)| {
+                    Ok((name, rwops.load_music()?))
+                })
+                .collect::<Result<HashMap<_, _>>>()?,
 
-            music: music,
-
-            sfx: HashMap::new(),
+            sfx: sfx.into_iter()
+                .map(|(name, rwops, channel)| {
+                    Ok((name, (rwops.load_wav()?, mixer::channel(channel))))
+                })
+                .collect::<Result<HashMap<_, _>>>()?,
             queued_sfx: HashSet::new(),
         })
-    }
-
-    /// Load a sound effect.
-    fn load_sfx(&mut self, name: &str, channel: i32) -> Result<()> {
-        let path = self.path.join("chunks").join(name);
-        let chunk = Chunk::from_file(&path)?;
-
-        self.sfx.insert(name.to_string(), (chunk, mixer::channel(channel)));
-
-        Ok(())
     }
 
     /// Play a music file.
@@ -102,14 +78,11 @@ impl AudioData {
 /// Audio support.
 pub struct Audio<'a> {
     /// Audio data.
-    data: AudioData,
+    data: AudioData<'a>,
     /// Whether music is enabled or not.
     music_enabled: bool,
     /// Whether sound effects is enabled or not.
     sfx_enabled: bool,
-
-    #[doc(hidden)]
-    _phantom: PhantomData<&'a str>,
 }
 
 /// The frequency to play audio at.
@@ -126,32 +99,19 @@ static PLAY_UNLIMITED: i32 = -1;
 static FADE_OUT_TIME: i32 = 1280;
 
 impl<'a> Audio<'a> {
-    /// Load all audio files from a directory.
-    ///
-    /// Sound effects are loaded from the `sounds/chunks` subdirectory and music from the
-    /// `sounds/musics` subdirectory.
-    pub fn new(asset_dir: &Path) -> Result<Self> {
+    /// Load audio from data.
+    pub fn new<M, S>(music: M, sfx: S) -> Result<Self>
+        where M: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>)>,
+              S: IntoIterator<Item = (&'a str, &'a LoaderRWops<'a>, i32)>,
+    {
         mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS)?;
         mixer::allocate_channels(CHANNELS);
 
         Ok(Audio {
-            data: AudioData::new(asset_dir)?,
+            data: AudioData::new(music.into_iter(), sfx.into_iter())?,
             music_enabled: true,
             sfx_enabled: true,
-
-            _phantom: PhantomData,
         })
-    }
-
-    /// Load sound effects for playing on specific channels.
-    pub fn load_sfx<I, N>(&mut self, sfx: I) -> Result<&mut Self>
-        where I: Iterator<Item = (N, i32)>,
-              N: AsRef<str>,
-    {
-        sfx.map(|(ref name, channel)| self.data.load_sfx(name.as_ref(), channel))
-            .collect::<Result<Vec<_>>>()?;
-
-        Ok(self)
     }
 
     /// Set whether music is enabled or not.
