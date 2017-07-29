@@ -1,7 +1,7 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying file LICENSE for details.
 
-use crates::chrono::UTC;
+use crates::chrono::Utc;
 use crates::mersenne_twister::MT19937;
 use crates::rand::{Rng, SeedableRng};
 
@@ -14,7 +14,7 @@ pub struct Rand {
 impl Rand {
     /// Create a new random number source.
     pub fn new() -> Self {
-        let seed = UTC::now().timestamp() as u32;
+        let seed = Utc::now().timestamp() as u32;
 
         Rand {
             twister: MT19937::from_seed(seed),
@@ -74,7 +74,7 @@ impl Rand {
 
 #[cfg(test)]
 mod test {
-    use crates::chrono::UTC;
+    use crates::chrono::Utc;
     use crates::itertools::{self, Itertools};
 
     use rand::Rand;
@@ -103,7 +103,7 @@ mod test {
     #[test]
     fn test_ranges_work() {
         let mut rand = Rand::new();
-        let seed = UTC::now().timestamp() as u32;
+        let seed = Utc::now().timestamp() as u32;
 
         println!("seed: {}", seed);
         rand.set_seed(seed);
