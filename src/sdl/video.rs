@@ -119,12 +119,12 @@ impl<'a> Video<'a> {
             gfx_window_sdl::init(window)
                 .map_err(|err| ErrorKind::Msg(format!("failed to initialize the video subsystem: {:?}", err)))?;
 
-        let mut renderer = window.renderer()
+        let mut canvas = window.into_canvas()
             .build()
             .chain_err(|| "failed to build a renderer")?;
-        renderer.set_logical_size(size.x, size.y)
+        canvas.set_logical_size(size.x, size.y)
             .chain_err(|| "failed to set the logical window size")?;
-        let window = renderer.into_window().expect("failed to create a render window");
+        let window = canvas.into_window();
 
         window.gl_make_current(&gl_context).expect("failed to make an OpenGL context");
 
