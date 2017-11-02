@@ -16,6 +16,7 @@ mod crates {
     pub extern crate gfx;
     pub extern crate gfx_device_gl;
     pub extern crate gfx_window_sdl;
+    pub extern crate rayon;
     pub extern crate sdl2;
 
     // private

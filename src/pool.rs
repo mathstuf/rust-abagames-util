@@ -4,6 +4,11 @@
 use std::iter::{self, Chain};
 use std::slice::{Iter, IterMut};
 
+use crates::rayon::iter::Chain as ParChain;
+use crates::rayon::prelude::*;
+use crates::rayon::slice::Iter as ParIter;
+use crates::rayon::slice::IterMut as ParIterMut;
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 /// Whether to keep or remove a pool entity after stepping it.
 pub enum PoolRemoval {
@@ -160,5 +165,39 @@ impl<T> Pool<T> {
                 idx += 1;
             }
         }
+    }
+}
+
+impl<T> Pool<T>
+where
+    T: Sync,
+{
+    #[inline]
+    /// A parallel iterator over in-use objects.
+    pub fn par_iter(&self) -> ParIter<T> {
+        self.in_use.par_iter()
+    }
+
+    #[inline]
+    /// A parallel iterator over all objects.
+    pub fn par_iter_all(&self) -> ParChain<ParIter<T>, ParIter<T>> {
+        self.in_use.par_iter().chain(self.pool.par_iter())
+    }
+}
+
+impl<T> Pool<T>
+where
+    T: Send,
+{
+    #[inline]
+    /// A parallel iterator over in-use objects.
+    pub fn par_iter_mut(&mut self) -> ParIterMut<T> {
+        self.in_use.par_iter_mut()
+    }
+
+    #[inline]
+    /// A parallel iterator over all objects.
+    pub fn par_iter_all_mut(&mut self) -> ParChain<ParIterMut<T>, ParIterMut<T>> {
+        self.in_use.par_iter_mut().chain(self.pool.par_iter_mut())
     }
 }
