@@ -86,9 +86,9 @@ pub struct Video<'a> {
     _phantom: PhantomData<&'a str>,
 }
 
-static NEAR_PLANE: f32 = 0.1;
-static FAR_PLANE: f32 = 1000.;
-static CLEAR_COLOR: [f32; 4] = [0.; 4];
+const NEAR_PLANE: f32 = 0.1;
+const FAR_PLANE: f32 = 1000.;
+const CLEAR_COLOR: [f32; 4] = [0.; 4];
 
 impl<'a> Video<'a> {
     /// Create a new video structure.
