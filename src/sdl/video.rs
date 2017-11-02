@@ -110,6 +110,7 @@ impl<'a> Video<'a> {
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_flags().debug().set();
         gl_attr.set_context_version(3, 2);
+        gl_attr.set_stencil_size(0);
         video.gl_load_library_default().map_err(|err| {
             ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err))
         })?;
