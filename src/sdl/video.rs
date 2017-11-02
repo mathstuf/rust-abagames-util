@@ -26,6 +26,9 @@ pub type Encoder = gfx::Encoder<Resources, GLCommandBuffer>;
 
 error_chain! {}
 
+/// The pixel format of the SDL surface.
+pub type TargetFormat = Srgba8;
+
 /// A context object for queuing commands to the rendering device.
 pub struct EncoderContext<'a, R, C: 'a>
 where
@@ -74,7 +77,7 @@ pub struct Video<'a> {
     _gl_context: GLContext,
     device: GLDevice,
     factory: Factory,
-    view: RenderTargetView<Resources, Srgba8>,
+    view: RenderTargetView<Resources, TargetFormat>,
     depth_stencil_view: DepthStencilView<Resources, DepthStencil>,
 
     encoder: Encoder,
@@ -202,7 +205,7 @@ impl<'a> Video<'a> {
     }
 
     /// The factory and viewpoint for the device and window.
-    pub fn factory_view(&mut self) -> (&mut Factory, &RenderTargetView<Resources, Srgba8>) {
+    pub fn factory_view(&mut self) -> (&mut Factory, &RenderTargetView<Resources, TargetFormat>) {
         (&mut self.factory, &self.view)
     }
 
