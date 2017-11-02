@@ -33,7 +33,6 @@ pub type TargetFormat = Srgba8;
 pub struct EncoderContext<'a, R, C: 'a>
 where
     R: gfx::Resources,
-    C: gfx::CommandBuffer<R>,
 {
     /// The size of the view.
     pub size: Vector2<u32>,
