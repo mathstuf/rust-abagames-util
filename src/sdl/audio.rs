@@ -12,7 +12,7 @@ use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;
 use std::mem;
 
-error_chain! {}
+use sdl::error::*;
 
 /// Audio data information and management.
 struct AudioData<'a> {
@@ -36,13 +36,21 @@ impl<'a> AudioData<'a> {
         Ok(AudioData {
             music: music
                 .into_iter()
-                .map(|&(name, ref loader)| Ok((name, loader.load_music()?)))
+                .map(|&(name, ref loader)| {
+                    Ok((name, loader.load_music().map_err(ErrorKind::Audio)?))
+                })
                 .collect::<Result<HashMap<_, _>>>()?,
 
             sfx: sfx
                 .into_iter()
                 .map(|&(name, ref loader, channel)| {
-                    Ok((name, (loader.load_wav()?, Channel(channel))))
+                    Ok((
+                        name,
+                        (
+                            loader.load_wav().map_err(ErrorKind::Audio)?,
+                            Channel(channel),
+                        ),
+                    ))
                 })
                 .collect::<Result<HashMap<_, _>>>()?,
             queued_sfx: HashSet::new(),
@@ -109,7 +117,7 @@ impl<'a> Audio<'a> {
         S: IntoIterator<Item = &'a (&'a str, D, i32)>,
         D: LoaderRWops<'a> + 'a,
     {
-        mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS)?;
+        mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS).map_err(ErrorKind::Audio)?;
         mixer::allocate_channels(CHANNELS);
 
         Ok(Audio {
