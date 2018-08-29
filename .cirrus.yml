@@ -9,7 +9,7 @@ clippy_task:
     cargo_cache:
         folder: $CARGO_HOME/registry
         fingerprint_script: cat Cargo.lock
-    deps_script: apt-get update && apt-get install -y libsdl2-dev libsdl2-mixer-dev && apt-get clean
+    deps_script: apt-get update && apt-get install -y libsdl2-dev && apt-get clean
     fmt_script: cargo clippy
 
 rustfmt_task:
@@ -37,7 +37,7 @@ linux_task:
     cargo_cache:
         folder: $CARGO_HOME/registry
         fingerprint_script: cat Cargo.lock
-    deps_script: apt-get update && apt-get install -y libsdl2-dev libsdl2-mixer-dev && apt-get clean
+    deps_script: apt-get update && apt-get install -y libsdl2-dev && apt-get clean
     build_script: cargo +$RUSTVER build
     test_script: cargo +$RUSTVER test
     before_cache_script: rm -rf $CARGO_HOME/registry/index
