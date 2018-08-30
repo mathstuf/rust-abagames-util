@@ -15,9 +15,9 @@ pub use self::mainloop::{Event, Game, MainLoop, StepResult};
 pub use self::video::{EncoderContext, EncoderDrawContext, Resources, TargetFormat, Video};
 
 /// SDL subsystem structure.
-pub struct SdlInfo<'a> {
+pub struct SdlInfo {
     /// The video subsystem.
-    pub video: Video<'a>,
+    pub video: Video,
 }
 
 /// A builder object for the SDL context.

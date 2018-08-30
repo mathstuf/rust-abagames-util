@@ -18,8 +18,6 @@ use crates::sdl2::hint;
 use crates::sdl2::video::{GLContext, GLProfile, Window};
 use crates::sdl2::Sdl;
 
-use std::marker::PhantomData;
-
 use sdl::error::*;
 
 pub use crates::gfx_device_gl::{Factory, Resources};
@@ -71,7 +69,7 @@ where
 }
 
 /// Video support.
-pub struct Video<'a> {
+pub struct Video {
     window: Window,
     _gl_context: GLContext,
     device: GLDevice,
@@ -84,15 +82,13 @@ pub struct Video<'a> {
     size: Vector2<u32>,
     perspective_matrix: Matrix4<f32>,
     orthographic_matrix: Matrix4<f32>,
-
-    _phantom: PhantomData<&'a str>,
 }
 
 const NEAR_PLANE: f32 = 0.1;
 const FAR_PLANE: f32 = 1000.;
 const CLEAR_COLOR: [f32; 4] = [0.; 4];
 
-impl<'a> Video<'a> {
+impl Video {
     /// Create a new video structure.
     ///
     /// This creates the window and rendering surface for the video subsystem as well.
@@ -161,8 +157,6 @@ impl<'a> Video<'a> {
             factory,
             view,
             depth_stencil_view,
-
-            _phantom: PhantomData,
         })
     }
 
