@@ -75,17 +75,17 @@ impl Rand {
 #[cfg(test)]
 mod test {
     use crates::chrono::Utc;
-    use crates::itertools::{self, Itertools};
 
     use rand::Rand;
 
     use std::fmt::Debug;
+    use std::iter;
 
     fn run_rand<T, F>(closure: F) -> Vec<T>
     where
         F: FnMut() -> T,
     {
-        itertools::repeat_call(closure).take(20).collect()
+        iter::repeat_with(closure).take(20).collect()
     }
 
     fn verify_rand<T, F, P>(closure: F, pred: P) -> bool
@@ -94,7 +94,7 @@ mod test {
         P: Fn(T) -> bool,
         T: Debug,
     {
-        itertools::repeat_call(closure)
+        iter::repeat_with(closure)
             .take(20)
             .inspect(|t| print!("{:?}...", t))
             .all(pred)
@@ -111,11 +111,11 @@ mod test {
         (0..100)
             .into_iter()
             .inspect(|n| println!("\nrand.next_int({:?})...", n))
-            .foreach(|n| assert!(verify_rand(|| rand.next_int(n), |i| i < n || n == 0)));
+            .for_each(|n| assert!(verify_rand(|| rand.next_int(n), |i| i < n || n == 0)));
         (0..100)
             .into_iter()
             .inspect(|n| println!("\nrand.next_int_signed({:?})...", n))
-            .foreach(|n| {
+            .for_each(|n| {
                 assert!(verify_rand(
                     || rand.next_int_signed(n),
                     |i| {
@@ -127,12 +127,12 @@ mod test {
         (0..100)
             .into_iter()
             .inspect(|_| println!("\nrand.next_real()..."))
-            .foreach(|_| assert!(verify_rand(|| rand.next_real(), |f| 0. <= f && f < 1.)));
+            .for_each(|_| assert!(verify_rand(|| rand.next_real(), |f| 0. <= f && f < 1.)));
         (0..100)
             .into_iter()
             .map(|n: usize| n as f32)
             .inspect(|n| println!("\nrand.next_float({:?})...", n))
-            .foreach(|n| {
+            .for_each(|n| {
                 assert!(verify_rand(
                     || rand.next_float(n),
                     |f| (0. <= f && f < n) || n == 0.
@@ -142,7 +142,7 @@ mod test {
             .into_iter()
             .map(|n: usize| n as f32)
             .inspect(|n| println!("\nrand.next_float_signed({:?})...", n))
-            .foreach(|n| {
+            .for_each(|n| {
                 assert!(verify_rand(
                     || rand.next_float_signed(n),
                     |f| (-n <= f && f < n) || n == 0.
