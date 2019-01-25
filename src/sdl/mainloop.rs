@@ -66,12 +66,12 @@ pub struct MainLoop<'a> {
     sdl_context: &'a Sdl,
 }
 
-static INTERVAL_BASE: f32 = 16.;
-static MAX_SKIP_FRAME: i32 = 5;
-static NO_WAIT: bool = false;
-static ACCELERATE_FRAME: bool = false;
-static SLOWDOWN_START_RATIO: f32 = 1.;
-static SLOWDOWN_MAX_RATIO: f32 = 1.75;
+const INTERVAL_BASE: f32 = 16.;
+const MAX_SKIP_FRAME: i32 = 5;
+const NO_WAIT: bool = false;
+const ACCELERATE_FRAME: bool = false;
+const SLOWDOWN_START_RATIO: f32 = 1.;
+const SLOWDOWN_MAX_RATIO: f32 = 1.75;
 
 impl<'a> MainLoop<'a> {
     /// Create a new main loop from and SDL context.

@@ -14,7 +14,7 @@ pub mod video;
 pub use self::audio::Audio;
 pub use self::input::{Input, Scancode};
 pub use self::mainloop::{Event, Game, MainLoop, StepResult};
-pub use self::video::{EncoderContext, EncoderDrawContext, Resources, Video};
+pub use self::video::{EncoderContext, EncoderDrawContext, Resources, TargetFormat, Video};
 
 error_chain! {
     links {

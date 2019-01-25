@@ -42,7 +42,7 @@ impl<'a> AudioData<'a> {
             sfx: sfx
                 .into_iter()
                 .map(|&(name, ref loader, channel)| {
-                    Ok((name, (loader.load_wav()?, mixer::Channel(channel))))
+                    Ok((name, (loader.load_wav()?, Channel(channel))))
                 })
                 .collect::<Result<HashMap<_, _>>>()?,
             queued_sfx: HashSet::new(),
@@ -89,17 +89,17 @@ pub struct Audio<'a> {
 }
 
 /// The frequency to play audio at.
-static FREQUENCY: i32 = 44100;
+const FREQUENCY: i32 = 44100;
 /// The format of the audio.
-static FORMAT: AudioFormat = mixer::AUDIO_S16;
+const FORMAT: AudioFormat = mixer::AUDIO_S16;
 /// The number of channels to play.
-static CHANNELS: i32 = 1;
+const CHANNELS: i32 = 1;
 /// The size of the audio buffers.
-static BUFFERS: i32 = 4096;
+const BUFFERS: i32 = 4096;
 /// The number of times to repeat audio infinitely.
-static PLAY_UNLIMITED: i32 = -1;
+const PLAY_UNLIMITED: i32 = -1;
 /// The amount of time, in milliseconds, over which to fade out music.
-static FADE_OUT_TIME: i32 = 1280;
+const FADE_OUT_TIME: i32 = 1280;
 
 impl<'a> Audio<'a> {
     /// Load audio from data.
