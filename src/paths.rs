@@ -39,7 +39,8 @@ impl Paths {
     /// Paths based on the install directory.
     fn from_install() -> io::Result<Self> {
         let exe_path = env::current_exe()?;
-        let appname_osstr = exe_path.file_name()
+        let appname_osstr = exe_path
+            .file_name()
             .expect("there should be a filename on the executable");
         let appname = appname_osstr.to_string_lossy();
 
@@ -57,9 +58,8 @@ impl Paths {
     #[cfg(windows)]
     /// The data directory on Windows.
     fn data_dir(appname: &str) -> PathBuf {
-        let mut appdata_dir = PathBuf::from(env::var("APPDATA")
-            .map(PathBuf::from)
-            .unwrap_or_else(|| {
+        let mut appdata_dir =
+            PathBuf::from(env::var("APPDATA").map(PathBuf::from).unwrap_or_else(|| {
                 let mut home = env::home_dir().unwrap();
                 home.push("Application Data");
                 home
@@ -71,14 +71,15 @@ impl Paths {
     #[cfg(not(any(windows)))]
     /// The configuration directory on non-Windows platforms.
     fn config_dir(appname: &str) -> PathBuf {
-        let mut config_dir = PathBuf::from(env::var("XDG_CONFIG_HOME")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| {
-                let mut home = env::home_dir()
-                    .expect("a home directory is required");
-                home.push(".config");
-                home
-            }));
+        let mut config_dir = PathBuf::from(
+            env::var("XDG_CONFIG_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| {
+                    let mut home = env::home_dir().expect("a home directory is required");
+                    home.push(".config");
+                    home
+                }),
+        );
         config_dir.push(appname);
         config_dir
     }
@@ -86,15 +87,16 @@ impl Paths {
     #[cfg(not(any(windows)))]
     /// The data directory on non-Windows platforms.
     fn data_dir(appname: &str) -> PathBuf {
-        let mut data_dir = PathBuf::from(env::var("XDG_DATA_HOME")
-            .map(PathBuf::from)
-            .unwrap_or_else(|_| {
-                let mut home = env::home_dir()
-                    .expect("a home directory is required");
-                home.push(".local");
-                home.push("share");
-                home
-            }));
+        let mut data_dir = PathBuf::from(
+            env::var("XDG_DATA_HOME")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| {
+                    let mut home = env::home_dir().expect("a home directory is required");
+                    home.push(".local");
+                    home.push("share");
+                    home
+                }),
+        );
         data_dir.push(appname);
         data_dir
     }
@@ -105,8 +107,11 @@ impl Paths {
 
         exe_path.pop(); // build config (build) or bin (install)
 
-        if "bin" == exe_path.file_name()
-            .expect("the executable path should have a parent directory") {
+        if "bin"
+            == exe_path
+                .file_name()
+                .expect("the executable path should have a parent directory")
+        {
             // In an install tree.
             exe_path.pop(); // install root
 

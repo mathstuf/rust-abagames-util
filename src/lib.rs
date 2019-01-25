@@ -26,15 +26,15 @@ mod crates {
 }
 
 mod math;
-mod rand;
 mod paths;
 mod pool;
+mod rand;
 mod sdl;
 mod slice;
 
 pub use math::*;
-pub use rand::*;
 pub use paths::*;
 pub use pool::*;
+pub use rand::*;
 pub use sdl::*;
 pub use slice::*;

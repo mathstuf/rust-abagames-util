@@ -82,17 +82,17 @@ mod test {
     use std::fmt::Debug;
 
     fn run_rand<T, F>(closure: F) -> Vec<T>
-        where F: FnMut() -> T,
+    where
+        F: FnMut() -> T,
     {
-        itertools::repeat_call(closure)
-            .take(20)
-            .collect()
+        itertools::repeat_call(closure).take(20).collect()
     }
 
     fn verify_rand<T, F, P>(closure: F, pred: P) -> bool
-        where F: FnMut() -> T,
-              P: Fn(T) -> bool,
-              T: Debug,
+    where
+        F: FnMut() -> T,
+        P: Fn(T) -> bool,
+        T: Debug,
     {
         itertools::repeat_call(closure)
             .take(20)
@@ -116,10 +116,13 @@ mod test {
             .into_iter()
             .inspect(|n| println!("\nrand.next_int_signed({:?})...", n))
             .foreach(|n| {
-                assert!(verify_rand(|| rand.next_int_signed(n), |i| {
-                    let n = n as i32;
-                    -n <= i && i <= n
-                }))
+                assert!(verify_rand(
+                    || rand.next_int_signed(n),
+                    |i| {
+                        let n = n as i32;
+                        -n <= i && i <= n
+                    }
+                ))
             });
         (0..100)
             .into_iter()
@@ -130,15 +133,20 @@ mod test {
             .map(|n: usize| n as f32)
             .inspect(|n| println!("\nrand.next_float({:?})...", n))
             .foreach(|n| {
-                assert!(verify_rand(|| rand.next_float(n), |f| (0. <= f && f < n) || n == 0.))
+                assert!(verify_rand(
+                    || rand.next_float(n),
+                    |f| (0. <= f && f < n) || n == 0.
+                ))
             });
         (0..100)
             .into_iter()
             .map(|n: usize| n as f32)
             .inspect(|n| println!("\nrand.next_float_signed({:?})...", n))
             .foreach(|n| {
-                assert!(verify_rand(|| rand.next_float_signed(n),
-                                    |f| (-n <= f && f < n) || n == 0.))
+                assert!(verify_rand(
+                    || rand.next_float_signed(n),
+                    |f| (-n <= f && f < n) || n == 0.
+                ))
             });
     }
 
@@ -150,19 +158,33 @@ mod test {
         rand_0.set_seed(1);
         rand_1.set_seed(1);
 
-        assert_eq!(run_rand(|| rand_0.next_u32()),
-                   run_rand(|| rand_1.next_u32()));
-        assert_eq!(run_rand(|| rand_0.next_int(10)),
-                   run_rand(|| rand_1.next_int(10)));
-        assert_eq!(run_rand(|| rand_0.next_int(200)),
-                   run_rand(|| rand_1.next_int(200)));
-        assert_eq!(run_rand(|| rand_0.next_int_signed(200)),
-                   run_rand(|| rand_1.next_int_signed(200)));
-        assert_eq!(run_rand(|| rand_0.next_real()),
-                   run_rand(|| rand_1.next_real()));
-        assert_eq!(run_rand(|| rand_0.next_float(0.2)),
-                   run_rand(|| rand_1.next_float(0.2)));
-        assert_eq!(run_rand(|| rand_0.next_float_signed(-0.4)),
-                   run_rand(|| rand_1.next_float_signed(-0.4)));
+        assert_eq!(
+            run_rand(|| rand_0.next_u32()),
+            run_rand(|| rand_1.next_u32())
+        );
+        assert_eq!(
+            run_rand(|| rand_0.next_int(10)),
+            run_rand(|| rand_1.next_int(10))
+        );
+        assert_eq!(
+            run_rand(|| rand_0.next_int(200)),
+            run_rand(|| rand_1.next_int(200))
+        );
+        assert_eq!(
+            run_rand(|| rand_0.next_int_signed(200)),
+            run_rand(|| rand_1.next_int_signed(200))
+        );
+        assert_eq!(
+            run_rand(|| rand_0.next_real()),
+            run_rand(|| rand_1.next_real())
+        );
+        assert_eq!(
+            run_rand(|| rand_0.next_float(0.2)),
+            run_rand(|| rand_1.next_float(0.2))
+        );
+        assert_eq!(
+            run_rand(|| rand_0.next_float_signed(-0.4)),
+            run_rand(|| rand_1.next_float_signed(-0.4))
+        );
     }
 }

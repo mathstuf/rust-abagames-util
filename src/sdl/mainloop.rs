@@ -6,8 +6,8 @@
 //! This module contains the logic for the main loop of a game and a trait which is used by the
 //! loop.
 
-use crates::sdl2::Sdl;
 pub use crates::sdl2::event::Event;
+use crates::sdl2::Sdl;
 
 use sdl::input::Input;
 
@@ -25,8 +25,7 @@ pub enum StepResult {
 impl StepResult {
     fn merge(self, other: Self) -> Self {
         match (self, other) {
-            (StepResult::Done, _) |
-            (_, StepResult::Done) => StepResult::Done,
+            (StepResult::Done, _) | (_, StepResult::Done) => StepResult::Done,
             (StepResult::Slowdown(s1), StepResult::Slowdown(s2)) => StepResult::Slowdown(s1 + s2),
         }
     }
@@ -90,14 +89,16 @@ impl<'a> MainLoop<'a> {
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
 
-        game.init()
-            .chain_err(|| "failed to initialize the game")?;
+        game.init().chain_err(|| "failed to initialize the game")?;
 
         loop {
             let event = pump.poll_event();
 
             let mut is_done = if let Some(event) = event {
-                if let Event::Quit { .. } = event {
+                if let Event::Quit {
+                    ..
+                } = event
+                {
                     true
                 } else {
                     game.handle_event(&event)
@@ -147,8 +148,7 @@ impl<'a> MainLoop<'a> {
                 StepResult::Slowdown(s) => s,
             };
 
-            game.draw()
-                .chain_err(|| "failed to draw a frame")?;
+            game.draw().chain_err(|| "failed to draw a frame")?;
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
@@ -159,19 +159,18 @@ impl<'a> MainLoop<'a> {
             }
         }
 
-        game.quit()
-            .chain_err(|| "failed to quit the game")?;
+        game.quit().chain_err(|| "failed to quit the game")?;
 
         Ok(())
     }
 
     fn calculate_interval(interval: f32, slowdown: f32) -> f32 {
-        interval +
-        if slowdown > SLOWDOWN_START_RATIO {
-            let ratio = f32::min(slowdown / SLOWDOWN_START_RATIO, SLOWDOWN_MAX_RATIO);
-            (ratio * INTERVAL_BASE - interval) * 0.1
-        } else {
-            (INTERVAL_BASE - interval) * 0.08
-        }
+        interval
+            + if slowdown > SLOWDOWN_START_RATIO {
+                let ratio = f32::min(slowdown / SLOWDOWN_START_RATIO, SLOWDOWN_MAX_RATIO);
+                (ratio * INTERVAL_BASE - interval) * 0.1
+            } else {
+                (INTERVAL_BASE - interval) * 0.08
+            }
     }
 }

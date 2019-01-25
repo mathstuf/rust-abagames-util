@@ -28,18 +28,19 @@ struct AudioData<'a> {
 impl<'a> AudioData<'a> {
     /// Load audio from data.
     fn new<M, S, D>(music: M, sfx: S) -> Result<Self>
-        where M: IntoIterator<Item = &'a (&'a str, D)>,
-              S: IntoIterator<Item = &'a (&'a str, D, i32)>,
-              D: LoaderRWops<'a> + 'a,
+    where
+        M: IntoIterator<Item = &'a (&'a str, D)>,
+        S: IntoIterator<Item = &'a (&'a str, D, i32)>,
+        D: LoaderRWops<'a> + 'a,
     {
         Ok(AudioData {
-            music: music.into_iter()
-                .map(|&(name, ref loader)| {
-                    Ok((name, loader.load_music()?))
-                })
+            music: music
+                .into_iter()
+                .map(|&(name, ref loader)| Ok((name, loader.load_music()?)))
                 .collect::<Result<HashMap<_, _>>>()?,
 
-            sfx: sfx.into_iter()
+            sfx: sfx
+                .into_iter()
                 .map(|&(name, ref loader, channel)| {
                     Ok((name, (loader.load_wav()?, mixer::channel(channel))))
                 })
@@ -65,7 +66,8 @@ impl<'a> AudioData<'a> {
     fn play_sfx(&mut self) -> bool {
         let sfx_to_play = mem::replace(&mut self.queued_sfx, HashSet::new());
 
-        sfx_to_play.iter()
+        sfx_to_play
+            .iter()
             .map(|&name| {
                 self.sfx
                     .get(name)
@@ -102,9 +104,10 @@ static FADE_OUT_TIME: i32 = 1280;
 impl<'a> Audio<'a> {
     /// Load audio from data.
     pub fn new<M, S, D>(music: M, sfx: S) -> Result<Self>
-        where M: IntoIterator<Item = &'a (&'a str, D)>,
-              S: IntoIterator<Item = &'a (&'a str, D, i32)>,
-              D: LoaderRWops<'a> + 'a,
+    where
+        M: IntoIterator<Item = &'a (&'a str, D)>,
+        S: IntoIterator<Item = &'a (&'a str, D, i32)>,
+        D: LoaderRWops<'a> + 'a,
     {
         mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS)?;
         mixer::allocate_channels(CHANNELS);

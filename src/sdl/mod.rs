@@ -2,9 +2,9 @@
 // See accompanying LICENSE file for details.
 
 use crates::cgmath::Vector2;
-use crates::sdl2::{self, Sdl};
-use crates::sdl2::rwops::RWops;
 use crates::sdl2::mixer::{self, Sdl2MixerContext};
+use crates::sdl2::rwops::RWops;
+use crates::sdl2::{self, Sdl};
 
 pub mod audio;
 pub mod input;
@@ -52,7 +52,8 @@ pub struct SdlBuilder<'a> {
 impl<'a> SdlBuilder<'a> {
     /// Create a new SDL structure.
     pub fn new<C>(caption: C) -> Result<Self>
-        where C: ToString,
+    where
+        C: ToString,
     {
         Ok(SdlBuilder {
             sdl: sdl2::init()?,
@@ -88,24 +89,24 @@ impl<'a> SdlBuilder<'a> {
 
     /// Load audio from data.
     pub fn with_music<M>(&mut self, music: M) -> &mut Self
-        where M: IntoIterator<Item = &'a (&'a str, &'a [u8])>,
+    where
+        M: IntoIterator<Item = &'a (&'a str, &'a [u8])>,
     {
-        self.music_data = music.into_iter()
-            .map(|&(name, data)| {
-                (name, RWops::from_bytes(data).unwrap())
-            })
+        self.music_data = music
+            .into_iter()
+            .map(|&(name, data)| (name, RWops::from_bytes(data).unwrap()))
             .collect();
         self
     }
 
     /// Load audio from data.
     pub fn with_sfx<S>(&mut self, sfx: S) -> &mut Self
-        where S: IntoIterator<Item = &'a (&'a str, &'a [u8], i32)>,
+    where
+        S: IntoIterator<Item = &'a (&'a str, &'a [u8], i32)>,
     {
-        self.sfx_data = sfx.into_iter()
-            .map(|&(name, data, channel)| {
-                (name, RWops::from_bytes(data).unwrap(), channel)
-            })
+        self.sfx_data = sfx
+            .into_iter()
+            .map(|&(name, data, channel)| (name, RWops::from_bytes(data).unwrap(), channel))
             .collect();
         self
     }

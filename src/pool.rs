@@ -29,28 +29,26 @@ pub type PoolChainIter<'a, T> = Chain<Iter<'a, T>, Iter<'a, T>>;
 impl<T> Pool<T> {
     /// Create a new pool with filled with objects created by a function.
     pub fn new<F>(size: usize, ctor: F) -> Self
-        where F: Fn() -> T,
+    where
+        F: Fn() -> T,
     {
         assert_ne!(size, 0);
 
         Pool {
-            pool: itertools::repeat_call(ctor)
-                .take(size)
-                .collect(),
+            pool: itertools::repeat_call(ctor).take(size).collect(),
             in_use: Vec::with_capacity(size),
         }
     }
 
     /// Create a new pool with filled with indexed objects created by a function.
     pub fn new_indexed<F>(size: usize, ctor: F) -> Self
-        where F: Fn(usize) -> T,
+    where
+        F: Fn(usize) -> T,
     {
         assert_ne!(size, 0);
 
         Pool {
-            pool: (0..size)
-                .map(ctor)
-                .collect(),
+            pool: (0..size).map(ctor).collect(),
             in_use: Vec::with_capacity(size),
         }
     }
@@ -80,13 +78,13 @@ impl<T> Pool<T> {
             self.in_use.last_mut()
         } else {
             self.in_use.first_mut()
-        }.expect("at least one object should be available")
+        }
+        .expect("at least one object should be available")
     }
 
     /// Clears the pool of all objects.
     pub fn clear(&mut self) {
-        self.pool
-            .extend(self.in_use.drain(..))
+        self.pool.extend(self.in_use.drain(..))
     }
 
     #[inline]
@@ -104,20 +102,19 @@ impl<T> Pool<T> {
     #[inline]
     /// An iterator over all objects.
     pub fn iter_all(&self) -> Chain<Iter<T>, Iter<T>> {
-        self.in_use.iter()
-            .chain(self.pool.iter())
+        self.in_use.iter().chain(self.pool.iter())
     }
 
     #[inline]
     /// An iterator over all objects.
     pub fn iter_all_mut(&mut self) -> Chain<IterMut<T>, IterMut<T>> {
-        self.in_use.iter_mut()
-            .chain(self.pool.iter_mut())
+        self.in_use.iter_mut().chain(self.pool.iter_mut())
     }
 
     /// Run a function for each in-use object and return expired objects to the pool.
     pub fn run<F>(&mut self, mut func: F)
-        where F: FnMut(&mut T) -> PoolRemoval,
+    where
+        F: FnMut(&mut T) -> PoolRemoval,
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
@@ -132,13 +129,16 @@ impl<T> Pool<T> {
     /// Run a function for each in-use object with access to the other objects in the pool and
     /// return expired objects to the pool.
     pub fn run_ref<F>(&mut self, mut func: F)
-        where F: FnMut(&mut T, PoolChainIter<T>) -> PoolRemoval,
+    where
+        F: FnMut(&mut T, PoolChainIter<T>) -> PoolRemoval,
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
             let status = {
                 let (left, right) = self.in_use.split_at_mut(idx);
-                let (item, right) = right.split_first_mut().expect("expected there to be at least one item on the right");
+                let (item, right) = right
+                    .split_first_mut()
+                    .expect("expected there to be at least one item on the right");
                 func(item, left.iter().chain(right.iter()))
             };
             match status {
@@ -150,7 +150,8 @@ impl<T> Pool<T> {
 
     /// Expire objects which may be returned to the pool.
     pub fn expire<F>(&mut self, pred: F)
-        where F: Fn(&T) -> PoolRemoval,
+    where
+        F: Fn(&T) -> PoolRemoval,
     {
         let mut idx = 0;
         while idx < self.in_use.len() {
