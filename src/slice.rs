@@ -11,10 +11,7 @@ where
     R: gfx::Resources,
     F: gfx::Factory<R>,
 {
-    let indices = (0..size)
-        .into_iter()
-        .chain(iter::once(0))
-        .collect::<Vec<_>>();
+    let indices = (0..size).chain(iter::once(0)).collect::<Vec<_>>();
 
     gfx::Slice {
         start: 0,
@@ -33,7 +30,7 @@ where
 {
     let first = data[0];
     let indices = data
-        .into_iter()
+        .iter()
         .chain(iter::once(&first))
         .cloned()
         .collect::<Vec<u16>>();
