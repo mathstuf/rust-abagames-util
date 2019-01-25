@@ -1,5 +1,5 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
-// See accompanying file LICENSE for details.
+// See accompanying LICENSE file for details.
 
 use crates::cgmath::{One, Vector2};
 
@@ -34,7 +34,8 @@ pub fn fast_distance(v1: Vector2<f32>, v2: Vector2<f32>) -> f32 {
 #[inline]
 /// Return `true` if a value is between two bounds (inclusive).
 fn between<T>(low: T, expect: T, high: T) -> bool
-    where T: PartialOrd,
+where
+    T: PartialOrd,
 {
     low <= expect && expect <= high
 }
@@ -48,7 +49,8 @@ pub fn contains(v1: Vector2<f32>, v2: Vector2<f32>, radius: f32) -> bool {
 #[inline]
 /// Increment a value by one around within a range.
 pub fn wrap_inc<T>(value: T, max: T) -> T
-    where T: PartialOrd + One + Add<T, Output = T> + Sub<T, Output = T> + Copy,
+where
+    T: PartialOrd + One + Add<T, Output = T> + Sub<T, Output = T> + Copy,
 {
     wrap_inc_by(value, max, T::one())
 }
@@ -56,7 +58,8 @@ pub fn wrap_inc<T>(value: T, max: T) -> T
 #[inline]
 /// Increment a value by a given step around within a range.
 pub fn wrap_inc_by<T>(value: T, max: T, step: T) -> T
-    where T: PartialOrd + Add<T, Output = T> + Sub<T, Output = T> + Copy,
+where
+    T: PartialOrd + Add<T, Output = T> + Sub<T, Output = T> + Copy,
 {
     let new_value = value + step;
     if new_value >= max {
@@ -69,7 +72,8 @@ pub fn wrap_inc_by<T>(value: T, max: T, step: T) -> T
 #[inline]
 /// Decrement a value by one around within a range.
 pub fn wrap_dec<T>(value: T, max: T) -> T
-    where T: PartialOrd + One + Add<T, Output = T> + Sub<T, Output = T> + Copy,
+where
+    T: PartialOrd + One + Add<T, Output = T> + Sub<T, Output = T> + Copy,
 {
     wrap_dec_by(value, max, T::one())
 }
@@ -77,7 +81,8 @@ pub fn wrap_dec<T>(value: T, max: T) -> T
 #[inline]
 /// Decrement a value by a given step around within a range.
 pub fn wrap_dec_by<T>(value: T, max: T, step: T) -> T
-    where T: PartialOrd + Add<T, Output = T> + Sub<T, Output = T> + Copy,
+where
+    T: PartialOrd + Add<T, Output = T> + Sub<T, Output = T> + Copy,
 {
     if value < step {
         value + max - step

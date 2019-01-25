@@ -1,5 +1,5 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
-// See accompanying file LICENSE for details.
+// See accompanying LICENSE file for details.
 
 //! Abagames Utilities
 //!
@@ -20,21 +20,22 @@ mod crates {
 
     // private
     pub extern crate chrono;
+    pub extern crate directories;
     pub extern crate itertools;
     pub extern crate mersenne_twister;
     pub extern crate rand;
 }
 
 mod math;
-mod rand;
 mod paths;
 mod pool;
+mod rand;
 mod sdl;
 mod slice;
 
 pub use math::*;
-pub use rand::*;
 pub use paths::*;
 pub use pool::*;
+pub use rand::*;
 pub use sdl::*;
 pub use slice::*;

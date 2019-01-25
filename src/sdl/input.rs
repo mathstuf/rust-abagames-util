@@ -1,15 +1,15 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
-// See accompanying file LICENSE for details.
+// See accompanying LICENSE file for details.
 
 //! Input subsystem support
 //!
 //! This module takes all of the input available from the event queue and stores it. This structure
 //! is used for storing and reading back replay data.
 
-use crates::sdl2::EventPump;
 use crates::sdl2::keyboard::KeyboardState;
-use crates::sdl2::mouse::MouseState;
 pub use crates::sdl2::keyboard::Scancode;
+use crates::sdl2::mouse::MouseState;
+use crates::sdl2::EventPump;
 
 /// Input snapshot.
 pub struct Input<'a> {
@@ -28,7 +28,7 @@ impl<'a> Input<'a> {
         Input {
             keyboard: KeyboardState::new(pump),
 
-            mouse: mouse,
+            mouse,
         }
     }
 }

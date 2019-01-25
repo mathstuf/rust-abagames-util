@@ -1,5 +1,5 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
-// See accompanying file LICENSE for details.
+// See accompanying LICENSE file for details.
 
 //! Video subsystem support
 //!
@@ -11,12 +11,12 @@ use crates::cgmath::{self, Matrix4, Vector2};
 use crates::gfx;
 use crates::gfx::format::{DepthStencil, Srgba8};
 use crates::gfx::handle::{DepthStencilView, RenderTargetView};
-use crates::gfx_device_gl::Device as GLDevice;
 use crates::gfx_device_gl::CommandBuffer as GLCommandBuffer;
+use crates::gfx_device_gl::Device as GLDevice;
 use crates::gfx_window_sdl;
-use crates::sdl2::Sdl;
 use crates::sdl2::hint;
 use crates::sdl2::video::{GLContext, GLProfile, Window};
+use crates::sdl2::Sdl;
 
 use std::marker::PhantomData;
 
@@ -28,8 +28,9 @@ error_chain! {}
 
 /// A context object for queuing commands to the rendering device.
 pub struct EncoderContext<'a, R, C: 'a>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
 {
     /// The size of the view.
     pub size: Vector2<u32>,
@@ -43,9 +44,10 @@ pub struct EncoderContext<'a, R, C: 'a>
 
 /// A context object to handle flushing commands to a device automatically.
 pub struct EncoderDrawContext<'a, R, C: 'a, D: 'a>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          D: gfx::Device<Resources = R, CommandBuffer = C>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     /// The encoder context.
     pub context: EncoderContext<'a, R, C>,
@@ -54,9 +56,10 @@ pub struct EncoderDrawContext<'a, R, C: 'a, D: 'a>
 }
 
 impl<'a, R, C, D> Drop for EncoderDrawContext<'a, R, C, D>
-    where R: gfx::Resources,
-          C: gfx::CommandBuffer<R>,
-          D: gfx::Device<Resources = R, CommandBuffer = C>,
+where
+    R: gfx::Resources,
+    C: gfx::CommandBuffer<R>,
+    D: gfx::Device<Resources = R, CommandBuffer = C>,
 {
     fn drop(&mut self) {
         self.context.encoder.flush(self.device);
@@ -91,42 +94,54 @@ impl<'a> Video<'a> {
     /// Create a new video structure.
     ///
     /// This creates the window and rendering surface for the video subsystem as well.
-    pub fn new(sdl_context: &Sdl, caption: &str, size: Vector2<u32>, windowed: bool)
-               -> Result<Self> {
-        let video = sdl_context.video()
-            .map_err(|err| ErrorKind::Msg(format!("failed to create the video context: {:?}", err)))?;
+    pub fn new(
+        sdl_context: &Sdl,
+        caption: &str,
+        size: Vector2<u32>,
+        windowed: bool,
+    ) -> Result<Self> {
+        let video = sdl_context.video().map_err(|err| {
+            ErrorKind::Msg(format!("failed to create the video context: {:?}", err))
+        })?;
 
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_flags().debug().set();
         gl_attr.set_context_version(3, 2);
-        video.gl_load_library_default()
-            .map_err(|err| ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err)))?;
+        video.gl_load_library_default().map_err(|err| {
+            ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err))
+        })?;
 
         let mut window = video.window(caption, size.x, size.y);
 
-        window.opengl()
-            .allow_highdpi();
+        window.opengl().allow_highdpi();
 
         if windowed {
-            window.position_centered()
-                .resizable();
+            window.position_centered().resizable();
         } else {
             window.fullscreen_desktop();
         }
 
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
-            gfx_window_sdl::init(window)
-                .map_err(|err| ErrorKind::Msg(format!("failed to initialize the video subsystem: {:?}", err)))?;
+            gfx_window_sdl::init(window).map_err(|err| {
+                ErrorKind::Msg(format!(
+                    "failed to initialize the video subsystem: {:?}",
+                    err
+                ))
+            })?;
 
-        let mut renderer = window.renderer()
+        let mut canvas = window
+            .into_canvas()
             .build()
             .chain_err(|| "failed to build a renderer")?;
-        renderer.set_logical_size(size.x, size.y)
+        canvas
+            .set_logical_size(size.x, size.y)
             .chain_err(|| "failed to set the logical window size")?;
-        let window = renderer.into_window().expect("failed to create a render window");
+        let window = canvas.into_window();
 
-        window.gl_make_current(&gl_context).expect("failed to make an OpenGL context");
+        window
+            .gl_make_current(&gl_context)
+            .expect("failed to make an OpenGL context");
 
         hint::set("SDL_HINT_RENDER_SCALE_QUALITY", "linear");
 
@@ -141,12 +156,12 @@ impl<'a> Video<'a> {
 
             encoder: factory.create_command_buffer().into(),
 
-            window: window,
+            window,
             _gl_context: gl_context,
-            device: device,
-            factory: factory,
-            view: view,
-            depth_stencil_view: depth_stencil_view,
+            device,
+            factory,
+            view,
+            depth_stencil_view,
 
             _phantom: PhantomData,
         })
@@ -155,12 +170,14 @@ impl<'a> Video<'a> {
     fn calc_perspective_matrix(size: Vector2<u32>) -> Matrix4<f32> {
         let aspect = (size.y as f32) / (size.x as f32);
 
-        cgmath::frustum(-NEAR_PLANE,
-                        NEAR_PLANE,
-                        -NEAR_PLANE * aspect,
-                        NEAR_PLANE * aspect,
-                        0.1,
-                        FAR_PLANE)
+        cgmath::frustum(
+            -NEAR_PLANE,
+            NEAR_PLANE,
+            -NEAR_PLANE * aspect,
+            NEAR_PLANE * aspect,
+            0.1,
+            FAR_PLANE,
+        )
     }
 
     fn calc_orthographic_matrix(size: Vector2<u32>) -> Matrix4<f32> {
