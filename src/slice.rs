@@ -1,9 +1,38 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
-use crates::gfx::{self, IntoIndexBuffer};
+use crates::gfx::{self, IndexBuffer, IntoIndexBuffer};
 
 use std::iter;
+
+/// Compute a slice for a line of the given size.
+pub fn slice_for_line<R>(size: u32) -> gfx::Slice<R>
+where
+    R: gfx::Resources,
+{
+    gfx::Slice {
+        start: 0,
+        end: size,
+        base_vertex: 0,
+        instances: None,
+        buffer: IndexBuffer::Auto,
+    }
+}
+
+/// Compute a slice for a line loop of the given size based on a list of indices.
+pub fn slice_for_line_with<R, F>(factory: &mut F, data: &[u16]) -> gfx::Slice<R>
+where
+    R: gfx::Resources,
+    F: gfx::Factory<R>,
+{
+    gfx::Slice {
+        start: 0,
+        end: data.len() as u32,
+        base_vertex: 0,
+        instances: None,
+        buffer: data.into_index_buffer(factory),
+    }
+}
 
 /// Compute a slice for a line loop of the given size.
 pub fn slice_for_loop<R, F>(factory: &mut F, size: u32) -> gfx::Slice<R>
