@@ -21,7 +21,6 @@ mod crates {
     // private
     pub extern crate chrono;
     pub extern crate directories;
-    pub extern crate itertools;
     pub extern crate mersenne_twister;
     pub extern crate rand;
 }

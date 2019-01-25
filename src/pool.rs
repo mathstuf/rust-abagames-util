@@ -1,9 +1,7 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
-use crates::itertools;
-
-use std::iter::Chain;
+use std::iter::{self, Chain};
 use std::slice::{Iter, IterMut};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -35,7 +33,7 @@ impl<T> Pool<T> {
         assert_ne!(size, 0);
 
         Pool {
-            pool: itertools::repeat_call(ctor).take(size).collect(),
+            pool: iter::repeat_with(ctor).take(size).collect(),
             in_use: Vec::with_capacity(size),
         }
     }
