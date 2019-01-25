@@ -8,11 +8,12 @@
 #![warn(missing_docs)]
 
 #[macro_use]
-extern crate error_chain;
+extern crate failure;
 
 mod crates {
     // public
     pub extern crate cgmath;
+    pub extern crate failure;
     pub extern crate gfx;
     pub extern crate gfx_device_gl;
     pub extern crate gfx_window_sdl;

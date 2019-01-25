@@ -6,12 +6,13 @@
 //! This module contains the logic for the main loop of a game and a trait which is used by the
 //! loop.
 
+use crates::failure::{Fail, ResultExt};
 pub use crates::sdl2::event::Event;
 use crates::sdl2::Sdl;
 
+use sdl::error::*;
 use sdl::input::Input;
 
-use std::error;
 use std::result;
 
 /// Behavior from stepping a frame in the game state.
@@ -31,12 +32,10 @@ impl StepResult {
     }
 }
 
-error_chain! {}
-
 /// Trait for a game which can be run by the event loop.
 pub trait Game {
     /// The error type for the game.
-    type Error: error::Error + Send + 'static;
+    type Error: Fail;
 
     /// Initialize the game.
     ///
@@ -83,13 +82,14 @@ impl<'a> MainLoop<'a> {
 
     /// Run a game to completion.
     pub fn run<G: Game>(&self, mut game: G) -> Result<()> {
-        let mut pump = self.sdl_context.event_pump()?;
-        let mut timer = self.sdl_context.timer()?;
+        let mut pump = self.sdl_context.event_pump().map_err(ErrorKind::Sdl)?;
+        let mut timer = self.sdl_context.timer().map_err(ErrorKind::Sdl)?;
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
 
-        game.init().chain_err(|| "failed to initialize the game")?;
+        game.init()
+            .context(ErrorKind::Mainloop(GameStep::Initialize))?;
 
         loop {
             let event = pump.poll_event();
@@ -102,7 +102,7 @@ impl<'a> MainLoop<'a> {
                     true
                 } else {
                     game.handle_event(&event)
-                        .chain_err(|| "failed to handle an event")?
+                        .context(ErrorKind::Mainloop(GameStep::HandleEvent))?
                 }
             } else {
                 false
@@ -135,7 +135,11 @@ impl<'a> MainLoop<'a> {
             let input = Input::new(&pump);
 
             let step_result = (0..frames)
-                .map(|_| Ok(game.step(&input).chain_err(|| "failed to step the game")?))
+                .map(|_| {
+                    Ok(game
+                        .step(&input)
+                        .context(ErrorKind::Mainloop(GameStep::StepGame))?)
+                })
                 .collect::<Result<Vec<_>>>()?
                 .into_iter()
                 .fold(StepResult::Slowdown(0.), StepResult::merge);
@@ -148,7 +152,8 @@ impl<'a> MainLoop<'a> {
                 StepResult::Slowdown(s) => s,
             };
 
-            game.draw().chain_err(|| "failed to draw a frame")?;
+            game.draw()
+                .context(ErrorKind::Mainloop(GameStep::DrawFrame))?;
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
@@ -159,7 +164,7 @@ impl<'a> MainLoop<'a> {
             }
         }
 
-        game.quit().chain_err(|| "failed to quit the game")?;
+        game.quit().context(ErrorKind::Mainloop(GameStep::Quit))?;
 
         Ok(())
     }

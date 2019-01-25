@@ -7,25 +7,16 @@ use crates::sdl2::rwops::RWops;
 use crates::sdl2::{self, Sdl};
 
 pub mod audio;
+pub mod error;
 pub mod input;
 pub mod mainloop;
 pub mod video;
 
 pub use self::audio::Audio;
+pub use self::error::*;
 pub use self::input::{Input, Scancode};
 pub use self::mainloop::{Event, Game, MainLoop, StepResult};
 pub use self::video::{EncoderContext, EncoderDrawContext, Resources, TargetFormat, Video};
-
-error_chain! {
-    links {
-        Audio(audio::Error, audio::ErrorKind)
-            #[doc = "errors from the audio subsystem"];
-        Mainloop(mainloop::Error, mainloop::ErrorKind)
-            #[doc = "errors from the main loop and game itself"];
-        Video(video::Error, video::ErrorKind)
-            #[doc = "errors from the video subsystem"];
-    }
-}
 
 /// SDL subsystem structure.
 pub struct SdlInfo<'a> {
@@ -56,7 +47,7 @@ impl<'a> SdlBuilder<'a> {
         C: Into<String>,
     {
         Ok(SdlBuilder {
-            sdl: sdl2::init()?,
+            sdl: sdl2::init().map_err(ErrorKind::Sdl)?,
             sdl_mixer_context: None,
 
             audio: true,
@@ -114,8 +105,8 @@ impl<'a> SdlBuilder<'a> {
     /// Construct the subsystem structure and the main loop.
     pub fn build(&mut self) -> Result<(SdlInfo, MainLoop)> {
         let audio = if self.audio {
-            self.sdl.audio()?;
-            self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG)?);
+            self.sdl.audio().map_err(ErrorKind::Sdl)?;
+            self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG).map_err(ErrorKind::Sdl)?);
             Some(Audio::new(self.music_data.iter(), self.sfx_data.iter())?)
         } else {
             None

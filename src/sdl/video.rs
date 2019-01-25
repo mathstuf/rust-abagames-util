@@ -20,11 +20,11 @@ use crates::sdl2::Sdl;
 
 use std::marker::PhantomData;
 
+use sdl::error::*;
+
 pub use crates::gfx_device_gl::{Factory, Resources};
 /// The specialized encoder type for the games.
 pub type Encoder = gfx::Encoder<Resources, GLCommandBuffer>;
-
-error_chain! {}
 
 /// The pixel format of the SDL surface.
 pub type TargetFormat = Srgba8;
@@ -102,18 +102,18 @@ impl<'a> Video<'a> {
         size: Vector2<u32>,
         windowed: bool,
     ) -> Result<Self> {
-        let video = sdl_context.video().map_err(|err| {
-            ErrorKind::Msg(format!("failed to create the video context: {:?}", err))
-        })?;
+        let video = sdl_context
+            .video()
+            .map_err(|msg| ErrorKind::Video(VideoStep::CreateSdlContext(msg)))?;
 
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(GLProfile::Core);
         gl_attr.set_context_flags().debug().set();
         gl_attr.set_context_version(3, 2);
         gl_attr.set_stencil_size(0);
-        video.gl_load_library_default().map_err(|err| {
-            ErrorKind::Msg(format!("failed to load the OpenGL library: {:?}", err))
-        })?;
+        video
+            .gl_load_library_default()
+            .map_err(|msg| ErrorKind::Video(VideoStep::LoadLibrary(msg)))?;
 
         let mut window = video.window(caption, size.x, size.y);
 
@@ -126,20 +126,16 @@ impl<'a> Video<'a> {
         }
 
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
-            gfx_window_sdl::init(&video, window).map_err(|err| {
-                ErrorKind::Msg(format!(
-                    "failed to initialize the video subsystem: {:?}",
-                    err
-                ))
-            })?;
+            gfx_window_sdl::init(&video, window)
+                .map_err(|err| ErrorKind::Video(VideoStep::Initialize(err)))?;
 
         let mut canvas = window
             .into_canvas()
             .build()
-            .chain_err(|| "failed to build a renderer")?;
+            .map_err(|err| ErrorKind::Video(VideoStep::BuildRenderer(err)))?;
         canvas
             .set_logical_size(size.x, size.y)
-            .chain_err(|| "failed to set the logical window size")?;
+            .map_err(|err| ErrorKind::Video(VideoStep::WindowSize(err)))?;
         let window = canvas.into_window();
 
         window
