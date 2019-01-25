@@ -6,6 +6,8 @@ use std::env;
 use std::io;
 use std::path::{Path, PathBuf};
 
+use crates::directories::ProjectDirs;
+
 /// Paths for configuration and data storage.
 pub struct Paths {
     /// Directory for storing configuration files.
@@ -44,61 +46,13 @@ impl Paths {
             .expect("there should be a filename on the executable");
         let appname = appname_osstr.to_string_lossy();
 
+        let project_dirs = ProjectDirs::from("", "", appname.borrow())
+            .expect("failed to create project directories");
+
         Ok(Paths {
-            config_dir: Self::config_dir(appname.borrow()),
-            data_dir: Self::data_dir(appname.borrow()),
+            config_dir: project_dirs.data_local_dir().join("data"),
+            data_dir: project_dirs.config_dir().to_path_buf(),
         })
-    }
-
-    #[cfg(windows)]
-    fn config_dir(appname: &str) -> PathBuf {
-        unimplemented!()
-    }
-
-    #[cfg(windows)]
-    /// The data directory on Windows.
-    fn data_dir(appname: &str) -> PathBuf {
-        let mut appdata_dir =
-            PathBuf::from(env::var("APPDATA").map(PathBuf::from).unwrap_or_else(|| {
-                let mut home = env::home_dir().unwrap();
-                home.push("Application Data");
-                home
-            }));
-        appdata_dir.push(appname);
-        appdata_dir.push("data");
-    }
-
-    #[cfg(not(any(windows)))]
-    /// The configuration directory on non-Windows platforms.
-    fn config_dir(appname: &str) -> PathBuf {
-        let mut config_dir = PathBuf::from(
-            env::var("XDG_CONFIG_HOME")
-                .map(PathBuf::from)
-                .unwrap_or_else(|_| {
-                    let mut home = env::home_dir().expect("a home directory is required");
-                    home.push(".config");
-                    home
-                }),
-        );
-        config_dir.push(appname);
-        config_dir
-    }
-
-    #[cfg(not(any(windows)))]
-    /// The data directory on non-Windows platforms.
-    fn data_dir(appname: &str) -> PathBuf {
-        let mut data_dir = PathBuf::from(
-            env::var("XDG_DATA_HOME")
-                .map(PathBuf::from)
-                .unwrap_or_else(|_| {
-                    let mut home = env::home_dir().expect("a home directory is required");
-                    home.push(".local");
-                    home.push("share");
-                    home
-                }),
-        );
-        data_dir.push(appname);
-        data_dir
     }
 
     /// Return the base path for the installation.
