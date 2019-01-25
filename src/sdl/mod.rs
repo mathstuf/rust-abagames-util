@@ -125,8 +125,8 @@ impl<'a> SdlBuilder<'a> {
         let video = Video::new(&self.sdl, &self.caption, self.size, self.windowed)?;
 
         let info = SdlInfo {
-            audio: audio,
-            video: video,
+            audio,
+            video,
         };
 
         Ok((info, mainloop))

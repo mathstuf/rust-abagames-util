@@ -28,7 +28,7 @@ impl<'a> Input<'a> {
         Input {
             keyboard: KeyboardState::new(pump),
 
-            mouse: mouse,
+            mouse,
         }
     }
 }

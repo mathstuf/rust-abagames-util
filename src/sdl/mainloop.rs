@@ -77,7 +77,7 @@ impl<'a> MainLoop<'a> {
     /// Create a new main loop from and SDL context.
     pub fn new(sdl_context: &'a Sdl) -> Self {
         MainLoop {
-            sdl_context: sdl_context,
+            sdl_context,
         }
     }
 

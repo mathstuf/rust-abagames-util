@@ -156,12 +156,12 @@ impl<'a> Video<'a> {
 
             encoder: factory.create_command_buffer().into(),
 
-            window: window,
+            window,
             _gl_context: gl_context,
-            device: device,
-            factory: factory,
-            view: view,
-            depth_stencil_view: depth_stencil_view,
+            device,
+            factory,
+            view,
+            depth_stencil_view,
 
             _phantom: PhantomData,
         })
