@@ -56,7 +56,7 @@ impl Rand {
     #[inline]
     /// Get a real number between 0 and 1.
     fn next_real(&mut self) -> f32 {
-        ((self.next_u32() as f64) * (1. / 4294967295.)) as f32
+        (f64::from(self.next_u32()) * (1. / 4_294_967_295.)) as f32
     }
 
     #[inline]
