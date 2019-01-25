@@ -123,7 +123,7 @@ impl<'a> Video<'a> {
         }
 
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
-            gfx_window_sdl::init(window).map_err(|err| {
+            gfx_window_sdl::init(&video, window).map_err(|err| {
                 ErrorKind::Msg(format!(
                     "failed to initialize the video subsystem: {:?}",
                     err

@@ -42,7 +42,7 @@ impl<'a> AudioData<'a> {
             sfx: sfx
                 .into_iter()
                 .map(|&(name, ref loader, channel)| {
-                    Ok((name, (loader.load_wav()?, mixer::channel(channel))))
+                    Ok((name, (loader.load_wav()?, mixer::Channel(channel))))
                 })
                 .collect::<Result<HashMap<_, _>>>()?,
             queued_sfx: HashSet::new(),
