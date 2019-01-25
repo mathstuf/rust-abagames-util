@@ -53,7 +53,7 @@ impl<'a> SdlBuilder<'a> {
     /// Create a new SDL structure.
     pub fn new<C>(caption: C) -> Result<Self>
     where
-        C: ToString,
+        C: Into<String>,
     {
         Ok(SdlBuilder {
             sdl: sdl2::init()?,
@@ -63,7 +63,7 @@ impl<'a> SdlBuilder<'a> {
             music_data: Vec::new(),
             sfx_data: Vec::new(),
 
-            caption: caption.to_string(),
+            caption: caption.into(),
             size: (640, 480).into(),
             windowed: false,
         })
