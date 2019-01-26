@@ -11,12 +11,14 @@ use crates::rodio::{self, Decoder, Device, Sink, Source};
 use crates::rodio::dynamic_mixer::{self, DynamicMixerController};
 use crates::rodio::source;
 
+use std::sync::atomic::{AtomicIsize, Ordering};
 use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;
 use std::fmt::{self, Display};
 use std::io::Cursor;
 use std::mem;
 use std::sync::Arc;
+use std::time::Duration;
 
 type Data = Decoder<Cursor<&'static [u8]>>;
 
@@ -68,8 +70,7 @@ impl From<Context<ErrorKind>> for AudioError {
 /// Audio data information and management.
 struct AudioData {
     /// Music files.
-    // XXX: https://github.com/tomaka/rodio/pull/182
-    music: HashMap<&'static str, source::Repeat<source::Buffered<Data>>>,
+    music: HashMap<&'static str, source::Buffered<Data>>,
 
     /// Sound effect files.
     sfx: HashMap<&'static str, source::Buffered<Data>>,
@@ -86,7 +87,7 @@ impl AudioData {
                 .map(|&(name, data)| {
                     let decoder = Decoder::new(Cursor::new(data))
                         .with_context(|_| ErrorKind::DecodeError("music", name))?;
-                    Ok((name, decoder.buffered().repeat_infinite()))
+                    Ok((name, decoder.buffered()))
                 })
                 .collect::<Result<HashMap<_, _>, AudioError>>()?,
 
@@ -98,6 +99,19 @@ impl AudioData {
                 })
                 .collect::<Result<HashMap<_, _>, AudioError>>()?,
         })
+    }
+}
+
+#[derive(Debug)]
+struct Controls {
+    fade_time: AtomicIsize,
+}
+
+impl Default for Controls {
+    fn default() -> Self {
+        Controls {
+            fade_time: AtomicIsize::new(-1),
+        }
     }
 }
 
@@ -113,6 +127,8 @@ pub struct Audio {
 
     /// Sink for music.
     music_sink: Sink,
+    /// Control data for music.
+    music_controls: Arc<Controls>,
 
     /// Sound effects queued for playing.
     queued_sfx: HashSet<&'static str>,
@@ -130,7 +146,11 @@ type Format = i16;
 /// The number of channels to play.
 const CHANNELS: u16 = 1;
 /// The amount of time, in milliseconds, over which to fade out music.
-const FADE_OUT_TIME: i32 = 1280;
+const FADE_OUT_TIME: isize = 1280;
+/// How often to update fade out.
+const FADE_ACCESS_INTERVAL: isize = 8;
+/// How often to update fade out.
+const FADE_ACCESS_DURATION: Duration = Duration::from_micros(FADE_ACCESS_INTERVAL as u64);
 
 impl Audio {
     /// Load audio from data.
@@ -152,6 +172,7 @@ impl Audio {
             sfx_enabled: true,
 
             music_sink: Sink::new(&device),
+            music_controls: Arc::new(Controls::default()),
 
             queued_sfx: HashSet::new(),
             sfx_mixer: controller,
@@ -172,11 +193,27 @@ impl Audio {
         where N: AsRef<str>,
     {
         if self.music_enabled {
+            let controls = self.music_controls.clone();
+
             let music = self.data
                 .music
                 .get(name.as_ref())
                 .expect("no such music")
-                .clone();
+                .clone()
+                .repeat_infinite()
+                .amplify(1.0)
+                .periodic_access(FADE_ACCESS_DURATION, move |src| {
+                    let fade = controls.fade_time.load(Ordering::SeqCst);
+
+                    let factor = if fade < 0 {
+                        1.0
+                    } else {
+                        controls.fade_time.store(fade - FADE_ACCESS_INTERVAL, Ordering::SeqCst);
+                        (fade as f32) / (FADE_OUT_TIME as f32)
+                    };
+
+                    src.set_factor(factor);
+                });
             self.halt();
             self.music_sink.append(music);
         }
@@ -213,9 +250,7 @@ impl Audio {
 
     /// Fade out the current music.
     pub fn fade(&self) {
-        // TODO: This is not supported at the moment.
-        // See https://github.com/tomaka/rodio/issues/179
-        // Music::fade_out(FADE_OUT_TIME).expect("fading out should work")
+        self.music_controls.fade_time.store(FADE_OUT_TIME, Ordering::SeqCst)
     }
 
     /// Stop playing all music.
