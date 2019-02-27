@@ -2,6 +2,7 @@
 // See accompanying LICENSE file for details.
 
 use std::iter::{self, Chain};
+use std::mem;
 use std::slice::{Iter, IterMut};
 
 use crates::rayon::iter::Chain as ParChain;
@@ -29,13 +30,26 @@ pub struct Pool<T> {
 /// An iterator over objects within the pool.
 pub type PoolChainIter<'a, T> = Chain<Iter<'a, T>, Iter<'a, T>>;
 
+const MAX_RECOMMENDED_SIZE: usize = 160_000;
+
 impl<T> Pool<T> {
+    fn check_size() {
+        if mem::size_of::<T>() > MAX_RECOMMENDED_SIZE {
+            eprintln!(
+                "Creating a pool with an item size > {} ({}); this is known to have issues",
+                MAX_RECOMMENDED_SIZE,
+                mem::size_of::<T>(),
+            );
+        }
+    }
+
     /// Create a new pool with filled with objects created by a function.
     pub fn new<F>(size: usize, ctor: F) -> Self
     where
         F: Fn() -> T,
     {
         assert_ne!(size, 0);
+        Self::check_size();
 
         Pool {
             pool: iter::repeat_with(ctor).take(size).collect(),
@@ -49,6 +63,7 @@ impl<T> Pool<T> {
         F: Fn(usize) -> T,
     {
         assert_ne!(size, 0);
+        Self::check_size();
 
         Pool {
             pool: (0..size).map(ctor).collect(),
@@ -199,5 +214,49 @@ where
     /// A parallel iterator over all objects.
     pub fn par_iter_all_mut(&mut self) -> ParChain<ParIterMut<T>, ParIterMut<T>> {
         self.in_use.par_iter_mut().chain(self.pool.par_iter_mut())
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use Pool;
+
+    use super::MAX_RECOMMENDED_SIZE;
+
+    #[test]
+    fn test_pool_new() {
+        let mut pool = Pool::new(10, || 0);
+        *pool.get().unwrap() = 1;
+        let in_use = pool.iter().collect::<Vec<_>>();
+        assert_eq!(in_use.len(), 1);
+        assert_eq!(*in_use[0], 1);
+    }
+
+    #[test]
+    fn test_pool_indexed() {
+        let mut pool = Pool::new_indexed(10, |i| i);
+        assert_eq!(*pool.get().unwrap(), 9);
+        assert_eq!(*pool.get().unwrap(), 8);
+    }
+
+    #[test]
+    fn test_pool_get_empty() {
+        let mut pool = Pool::new(1, || 0);
+        assert!(pool.get().is_some());
+        assert!(pool.get().is_none());
+    }
+
+    #[test]
+    fn test_pool_get_forced_empty() {
+        let mut pool = Pool::new(1, || 0);
+        *pool.get().unwrap() = 1;
+        assert_eq!(*pool.get_force(), 1);
+    }
+
+    #[test]
+    fn test_pool_get_forced_empty_big_type() {
+        let mut pool = Pool::new(1, || [0u8; MAX_RECOMMENDED_SIZE]);
+        (*pool.get().unwrap())[0] = 1;
+        assert_eq!((*pool.get_force())[0], 1);
     }
 }
