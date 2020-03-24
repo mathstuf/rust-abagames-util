@@ -1,6 +1,8 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
+//! Error types for SDL support.
+
 use crates::failure::{Backtrace, Context, Fail};
 use crates::gfx_window_sdl::InitError;
 use crates::sdl2::IntegerOrSdlError;
@@ -8,14 +10,20 @@ use crates::sdl2::IntegerOrSdlError;
 use std::fmt::{self, Display};
 use std::result::Result as StdResult;
 
+/// Steps in the video support setup.
 // https://github.com/Rust-SDL2/rust-sdl2/pull/791
 // #[derive(Debug, Clone, PartialEq, Eq)]
 #[derive(Debug)]
 pub enum VideoStep {
+    /// Creation of the SDL context object.
     CreateSdlContext(String),
+    /// Loading the backend OpenGL library.
     LoadLibrary(String),
+    /// Initializing the OpenGL context.
     Initialize(InitError),
+    /// Building the renderer instance.
     BuildRenderer(IntegerOrSdlError),
+    /// Setting the window size.
     WindowSize(IntegerOrSdlError),
 }
 
@@ -60,13 +68,18 @@ impl Display for VideoStep {
     }
 }
 
+/// Steps in setting up a game instance.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GameStep {
-    /// Failed to initialize the game.
+    /// Initialization of the game.
     Initialize,
+    /// Handling an event.
     HandleEvent,
+    /// Stepping the game.
     StepGame,
+    /// Drawing a frame.
     DrawFrame,
+    /// Quitting the game.
     Quit,
 }
 
@@ -88,6 +101,7 @@ impl Display for GameStep {
     }
 }
 
+/// Errors which may occur in SDL.
 // #[derive(Debug, Clone, PartialEq, Fail)]
 #[derive(Debug, PartialEq, Fail)]
 pub enum ErrorKind {
@@ -117,11 +131,13 @@ impl From<GameStep> for ErrorKind {
     }
 }
 
+/// An error from SDL.
 #[derive(Debug)]
 pub struct Error {
     inner: Context<ErrorKind>,
 }
 
+/// A result alias for SDL results.
 pub type Result<T> = StdResult<T, Error>;
 
 impl Fail for Error {
@@ -141,6 +157,7 @@ impl Display for Error {
 }
 
 impl Error {
+    /// The kind of the error.
     pub fn kind(&self) -> &ErrorKind {
         self.inner.get_context()
     }
