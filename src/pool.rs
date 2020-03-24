@@ -5,10 +5,10 @@ use std::iter::{self, Chain};
 use std::mem;
 use std::slice::{Iter, IterMut};
 
-use crates::rayon::iter::Chain as ParChain;
-use crates::rayon::prelude::*;
-use crates::rayon::slice::Iter as ParIter;
-use crates::rayon::slice::IterMut as ParIterMut;
+use rayon::iter::Chain as ParChain;
+use rayon::prelude::*;
+use rayon::slice::Iter as ParIter;
+use rayon::slice::IterMut as ParIterMut;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 /// Whether to keep or remove a pool entity after stepping it.
@@ -219,9 +219,8 @@ where
 
 #[cfg(test)]
 mod test {
-    use Pool;
-
-    use super::MAX_RECOMMENDED_SIZE;
+    use crate::pool::MAX_RECOMMENDED_SIZE;
+    use crate::Pool;
 
     #[test]
     fn test_pool_new() {

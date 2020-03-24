@@ -1,10 +1,10 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
-use crates::cgmath::Vector2;
-use crates::sdl2::mixer::{self, Sdl2MixerContext};
-use crates::sdl2::rwops::RWops;
-use crates::sdl2::{self, Sdl};
+use cgmath::Vector2;
+use sdl2::mixer::{self, Sdl2MixerContext};
+use sdl2::rwops::RWops;
+use sdl2::{self, Sdl};
 
 pub mod audio;
 pub mod error;

@@ -1,9 +1,9 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
-use crates::cgmath::{One, Vector2};
-
 use std::ops::{Add, Sub};
+
+use cgmath::{One, Vector2};
 
 #[inline]
 /// Compute a Manhattan between a point and the origin.
@@ -93,7 +93,7 @@ where
 
 #[cfg(test)]
 mod test {
-    use math::{wrap_dec, wrap_dec_by, wrap_inc, wrap_inc_by};
+    use crate::math::{wrap_dec, wrap_dec_by, wrap_inc, wrap_inc_by};
 
     #[test]
     fn test_wrap_inc() {

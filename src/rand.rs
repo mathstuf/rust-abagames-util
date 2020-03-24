@@ -1,9 +1,9 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
-use crates::chrono::Utc;
-use crates::mersenne_twister::MT19937;
-use crates::rand::{Rng, SeedableRng};
+use chrono::Utc;
+use mersenne_twister::MT19937;
+use rand::{Rng, SeedableRng};
 
 /// Seedable and repeatable source of random numbers.
 #[derive(Default)]
@@ -74,9 +74,9 @@ impl Rand {
 
 #[cfg(test)]
 mod test {
-    use crates::chrono::Utc;
+    use chrono::Utc;
 
-    use rand::Rand;
+    use crate::rand::Rand;
 
     use std::fmt::Debug;
     use std::iter;
