@@ -17,7 +17,7 @@ rayon = "^1.0"
 sdl2 = { version = "~0.31", features = ["mixer"] }
 
 chrono = "~0.4"
-directories = "^1.0"
+directories = "^2.0"
 mersenne_twister = "^1.1"
 rand = "~0.4"
 thiserror = "^1.0"
