@@ -2,13 +2,13 @@
 // See accompanying LICENSE file for details.
 
 use chrono::Utc;
-use mersenne_twister::MT19937;
-use rand::{Rng, SeedableRng};
+use rand_core::{RngCore, SeedableRng};
+use rand_mt::Mt19937GenRand32;
 
 /// Seedable and repeatable source of random numbers.
 #[derive(Default)]
 pub struct Rand {
-    twister: MT19937,
+    twister: Mt19937GenRand32,
 }
 
 impl Rand {
@@ -17,7 +17,7 @@ impl Rand {
         let seed = Utc::now().timestamp() as u32;
 
         Rand {
-            twister: MT19937::from_seed(seed),
+            twister: Mt19937GenRand32::from_seed(seed.to_be_bytes()),
         }
     }
 
