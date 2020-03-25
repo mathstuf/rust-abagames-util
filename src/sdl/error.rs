@@ -3,12 +3,12 @@
 
 //! Error types for SDL support.
 
-use crates::gfx_window_sdl::InitError;
-use crates::sdl2::IntegerOrSdlError;
-use crates::thiserror::Error;
-
 use std::error::Error;
 use std::fmt::{self, Display};
+
+use gfx_window_sdl::InitError;
+use sdl2::IntegerOrSdlError;
+use thiserror::Error;
 
 /// Steps in the video support setup.
 // https://github.com/Rust-SDL2/rust-sdl2/pull/791

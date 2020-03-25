@@ -6,13 +6,13 @@
 //! This module contains utilities to assist in loading any playing audio including background
 //! music and sound effects.
 
-use crates::sdl2::mixer::{self, AudioFormat, Channel, Chunk, LoaderRWops, Music};
-
 use std::collections::hash_map::HashMap;
 use std::collections::hash_set::HashSet;
 use std::mem;
 
-use sdl::error::*;
+use sdl2::mixer::{self, AudioFormat, Channel, Chunk, LoaderRWops, Music};
+
+use crate::sdl::error::*;
 
 /// Audio data information and management.
 struct AudioData<'a> {

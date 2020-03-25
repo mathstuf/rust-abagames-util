@@ -1,9 +1,9 @@
 // Distributed under the OSI-approved BSD 2-Clause License.
 // See accompanying LICENSE file for details.
 
-use crates::gfx::{self, IndexBuffer, IntoIndexBuffer};
-
 use std::iter;
+
+use gfx::{self, IndexBuffer, IntoIndexBuffer};
 
 /// Compute a slice for a line of the given size.
 pub fn slice_for_line<R>(size: u32) -> gfx::Slice<R>

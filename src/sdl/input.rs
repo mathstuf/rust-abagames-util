@@ -6,10 +6,10 @@
 //! This module takes all of the input available from the event queue and stores it. This structure
 //! is used for storing and reading back replay data.
 
-use crates::sdl2::keyboard::KeyboardState;
-pub use crates::sdl2::keyboard::Scancode;
-use crates::sdl2::mouse::MouseState;
-use crates::sdl2::EventPump;
+use sdl2::keyboard::KeyboardState;
+pub use sdl2::keyboard::Scancode;
+use sdl2::mouse::MouseState;
+use sdl2::EventPump;
 
 /// Input snapshot.
 pub struct Input<'a> {

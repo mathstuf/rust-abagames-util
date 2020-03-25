@@ -6,13 +6,13 @@
 //! This module contains the logic for the main loop of a game and a trait which is used by the
 //! loop.
 
-pub use crates::sdl2::event::Event;
-use crates::sdl2::Sdl;
-
-use sdl::error::*;
-use sdl::input::Input;
-
 use std::error::Error;
+
+pub use sdl2::event::Event;
+use sdl2::Sdl;
+
+use crate::sdl::error::*;
+use crate::sdl::input::Input;
 
 /// Behavior from stepping a frame in the game state.
 pub enum StepResult {

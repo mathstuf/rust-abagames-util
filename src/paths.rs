@@ -5,7 +5,7 @@ use std::borrow::Borrow;
 use std::env;
 use std::path::{Path, PathBuf};
 
-use crates::directories::ProjectDirs;
+use directories::ProjectDirs;
 
 /// Paths for configuration and data storage.
 pub struct Paths {
