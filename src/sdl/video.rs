@@ -101,10 +101,10 @@ impl<'a> Video<'a> {
         caption: &str,
         size: Vector2<u32>,
         windowed: bool,
-    ) -> Result<Self> {
+    ) -> SdlResult<Self> {
         let video = sdl_context
             .video()
-            .map_err(|msg| ErrorKind::Video(VideoStep::CreateSdlContext(msg)))?;
+            .map_err(|msg| SdlError::Video(VideoStep::CreateSdlContext(msg)))?;
 
         let gl_attr = video.gl_attr();
         gl_attr.set_context_profile(GLProfile::Core);
@@ -113,7 +113,7 @@ impl<'a> Video<'a> {
         gl_attr.set_stencil_size(0);
         video
             .gl_load_library_default()
-            .map_err(|msg| ErrorKind::Video(VideoStep::LoadLibrary(msg)))?;
+            .map_err(|msg| SdlError::Video(VideoStep::LoadLibrary(msg)))?;
 
         let mut window = video.window(caption, size.x, size.y);
 
@@ -127,15 +127,15 @@ impl<'a> Video<'a> {
 
         let (window, gl_context, device, mut factory, view, depth_stencil_view) =
             gfx_window_sdl::init(&video, window)
-                .map_err(|err| ErrorKind::Video(VideoStep::Initialize(err)))?;
+                .map_err(|err| SdlError::Video(VideoStep::Initialize(err)))?;
 
         let mut canvas = window
             .into_canvas()
             .build()
-            .map_err(|err| ErrorKind::Video(VideoStep::BuildRenderer(err)))?;
+            .map_err(|err| SdlError::Video(VideoStep::BuildRenderer(err)))?;
         canvas
             .set_logical_size(size.x, size.y)
-            .map_err(|err| ErrorKind::Video(VideoStep::WindowSize(err)))?;
+            .map_err(|err| SdlError::Video(VideoStep::WindowSize(err)))?;
         let window = canvas.into_window();
 
         window

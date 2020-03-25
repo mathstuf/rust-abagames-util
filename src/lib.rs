@@ -7,12 +7,9 @@
 
 #![warn(missing_docs)]
 
-extern crate failure;
-
 mod crates {
     // public
     pub extern crate cgmath;
-    pub extern crate failure;
     pub extern crate gfx;
     pub extern crate gfx_device_gl;
     pub extern crate gfx_window_sdl;
@@ -24,6 +21,7 @@ mod crates {
     pub extern crate directories;
     pub extern crate mersenne_twister;
     pub extern crate rand;
+    pub extern crate thiserror;
 }
 
 mod math;

@@ -27,7 +27,7 @@ struct AudioData<'a> {
 
 impl<'a> AudioData<'a> {
     /// Load audio from data.
-    fn new<M, S, D>(music: M, sfx: S) -> Result<Self>
+    fn new<M, S, D>(music: M, sfx: S) -> SdlResult<Self>
     where
         M: IntoIterator<Item = &'a (&'a str, D)>,
         S: IntoIterator<Item = &'a (&'a str, D, i32)>,
@@ -37,9 +37,9 @@ impl<'a> AudioData<'a> {
             music: music
                 .into_iter()
                 .map(|&(name, ref loader)| {
-                    Ok((name, loader.load_music().map_err(ErrorKind::Audio)?))
+                    Ok((name, loader.load_music().map_err(SdlError::Audio)?))
                 })
-                .collect::<Result<HashMap<_, _>>>()?,
+                .collect::<SdlResult<HashMap<_, _>>>()?,
 
             sfx: sfx
                 .into_iter()
@@ -47,12 +47,12 @@ impl<'a> AudioData<'a> {
                     Ok((
                         name,
                         (
-                            loader.load_wav().map_err(ErrorKind::Audio)?,
+                            loader.load_wav().map_err(SdlError::Audio)?,
                             Channel(channel),
                         ),
                     ))
                 })
-                .collect::<Result<HashMap<_, _>>>()?,
+                .collect::<SdlResult<HashMap<_, _>>>()?,
             queued_sfx: HashSet::new(),
         })
     }
@@ -111,13 +111,13 @@ const FADE_OUT_TIME: i32 = 1280;
 
 impl<'a> Audio<'a> {
     /// Load audio from data.
-    pub fn new<M, S, D>(music: M, sfx: S) -> Result<Self>
+    pub fn new<M, S, D>(music: M, sfx: S) -> SdlResult<Self>
     where
         M: IntoIterator<Item = &'a (&'a str, D)>,
         S: IntoIterator<Item = &'a (&'a str, D, i32)>,
         D: LoaderRWops<'a> + 'a,
     {
-        mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS).map_err(ErrorKind::Audio)?;
+        mixer::open_audio(FREQUENCY, FORMAT, CHANNELS, BUFFERS).map_err(SdlError::Audio)?;
         mixer::allocate_channels(CHANNELS);
 
         Ok(Audio {

@@ -42,12 +42,12 @@ pub struct SdlBuilder<'a> {
 
 impl<'a> SdlBuilder<'a> {
     /// Create a new SDL structure.
-    pub fn new<C>(caption: C) -> Result<Self>
+    pub fn new<C>(caption: C) -> SdlResult<Self>
     where
         C: Into<String>,
     {
         Ok(SdlBuilder {
-            sdl: sdl2::init().map_err(ErrorKind::Sdl)?,
+            sdl: sdl2::init().map_err(SdlError::Sdl)?,
             sdl_mixer_context: None,
 
             audio: true,
@@ -103,10 +103,10 @@ impl<'a> SdlBuilder<'a> {
     }
 
     /// Construct the subsystem structure and the main loop.
-    pub fn build(&mut self) -> Result<(SdlInfo, MainLoop)> {
+    pub fn build(&mut self) -> SdlResult<(SdlInfo, MainLoop)> {
         let audio = if self.audio {
-            self.sdl.audio().map_err(ErrorKind::Sdl)?;
-            self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG).map_err(ErrorKind::Sdl)?);
+            self.sdl.audio().map_err(SdlError::Sdl)?;
+            self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG).map_err(SdlError::Sdl)?);
             Some(Audio::new(self.music_data.iter(), self.sfx_data.iter())?)
         } else {
             None
