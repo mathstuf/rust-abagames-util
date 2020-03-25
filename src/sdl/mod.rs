@@ -106,7 +106,8 @@ impl<'a> SdlBuilder<'a> {
     pub fn build(&mut self) -> SdlResult<(SdlInfo, MainLoop)> {
         let audio = if self.audio {
             self.sdl.audio().map_err(SdlError::Sdl)?;
-            self.sdl_mixer_context = Some(mixer::init(mixer::INIT_OGG).map_err(SdlError::Sdl)?);
+            self.sdl_mixer_context =
+                Some(mixer::init(mixer::InitFlag::OGG).map_err(SdlError::Sdl)?);
             Some(Audio::new(self.music_data.iter(), self.sfx_data.iter())?)
         } else {
             None
