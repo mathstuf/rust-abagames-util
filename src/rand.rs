@@ -74,12 +74,12 @@ impl Rand {
 
 #[cfg(test)]
 mod test {
+    use std::fmt::Debug;
+    use std::iter;
+
     use chrono::Utc;
 
     use crate::rand::Rand;
-
-    use std::fmt::Debug;
-    use std::iter;
 
     fn run_rand<T, F>(closure: F) -> Vec<T>
     where
