@@ -6,14 +6,13 @@
 //! This module contains the logic for the main loop of a game and a trait which is used by the
 //! loop.
 
-use crates::failure::{Fail, ResultExt};
 pub use crates::sdl2::event::Event;
 use crates::sdl2::Sdl;
 
 use sdl::error::*;
 use sdl::input::Input;
 
-use std::result;
+use std::error::Error;
 
 /// Behavior from stepping a frame in the game state.
 pub enum StepResult {
@@ -35,29 +34,29 @@ impl StepResult {
 /// Trait for a game which can be run by the event loop.
 pub trait Game {
     /// The error type for the game.
-    type Error: Fail;
+    type Error: Error + Send + Sync + 'static;
 
     /// Initialize the game.
     ///
     /// Any one-time initialization routines should be completed in this method.
-    fn init(&mut self) -> result::Result<(), Self::Error>;
+    fn init(&mut self) -> Result<(), Self::Error>;
 
     /// Handle an event within the game.
     ///
     /// This is where events are given to the main loop. Return `true` if the game should exit,
     /// `false` to continue.
-    fn handle_event(&mut self, event: &Event) -> result::Result<bool, Self::Error>;
+    fn handle_event(&mut self, event: &Event) -> Result<bool, Self::Error>;
 
     /// Step the game one frame with the given input.
-    fn step(&mut self, input: &Input) -> result::Result<StepResult, Self::Error>;
+    fn step(&mut self, input: &Input) -> Result<StepResult, Self::Error>;
 
     /// Draw the game to the screen.
-    fn draw(&mut self) -> result::Result<(), Self::Error>;
+    fn draw(&mut self) -> Result<(), Self::Error>;
 
     /// Quit the game.
     ///
     /// Cleanup routines should be run here.
-    fn quit(&mut self) -> result::Result<(), Self::Error>;
+    fn quit(&mut self) -> Result<(), Self::Error>;
 }
 
 /// The mainloop structure.
@@ -81,15 +80,15 @@ impl<'a> MainLoop<'a> {
     }
 
     /// Run a game to completion.
-    pub fn run<G: Game>(&self, mut game: G) -> Result<()> {
-        let mut pump = self.sdl_context.event_pump().map_err(ErrorKind::Sdl)?;
-        let mut timer = self.sdl_context.timer().map_err(ErrorKind::Sdl)?;
+    pub fn run<G: Game>(&self, mut game: G) -> SdlResult<()> {
+        let mut pump = self.sdl_context.event_pump().map_err(SdlError::Sdl)?;
+        let mut timer = self.sdl_context.timer().map_err(SdlError::Sdl)?;
 
         let mut prev_tick = 0;
         let mut interval = INTERVAL_BASE;
 
         game.init()
-            .context(ErrorKind::Mainloop(GameStep::Initialize))?;
+            .map_err(|err| SdlError::mainloop(GameStep::Initialize, err))?;
 
         loop {
             let event = pump.poll_event();
@@ -102,7 +101,7 @@ impl<'a> MainLoop<'a> {
                     true
                 } else {
                     game.handle_event(&event)
-                        .context(ErrorKind::Mainloop(GameStep::HandleEvent))?
+                        .map_err(|err| SdlError::mainloop(GameStep::HandleEvent, err))?
                 }
             } else {
                 false
@@ -138,9 +137,9 @@ impl<'a> MainLoop<'a> {
                 .map(|_| {
                     Ok(game
                         .step(&input)
-                        .context(ErrorKind::Mainloop(GameStep::StepGame))?)
+                        .map_err(|err| SdlError::mainloop(GameStep::StepGame, err))?)
                 })
-                .collect::<Result<Vec<_>>>()?
+                .collect::<SdlResult<Vec<_>>>()?
                 .into_iter()
                 .fold(StepResult::Slowdown(0.), StepResult::merge);
 
@@ -153,7 +152,7 @@ impl<'a> MainLoop<'a> {
             };
 
             game.draw()
-                .context(ErrorKind::Mainloop(GameStep::DrawFrame))?;
+                .map_err(|err| SdlError::mainloop(GameStep::DrawFrame, err))?;
 
             if !NO_WAIT {
                 interval = Self::calculate_interval(interval, slowdown / (frames as f32));
@@ -164,7 +163,8 @@ impl<'a> MainLoop<'a> {
             }
         }
 
-        game.quit().context(ErrorKind::Mainloop(GameStep::Quit))?;
+        game.quit()
+            .map_err(|err| SdlError::mainloop(GameStep::Quit, err))?;
 
         Ok(())
     }

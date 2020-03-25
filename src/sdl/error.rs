@@ -3,12 +3,12 @@
 
 //! Error types for SDL support.
 
-use crates::failure::{Backtrace, Context, Fail};
 use crates::gfx_window_sdl::InitError;
 use crates::sdl2::IntegerOrSdlError;
+use crates::thiserror::Error;
 
+use std::error::Error;
 use std::fmt::{self, Display};
-use std::result::Result as StdResult;
 
 /// Steps in the video support setup.
 // https://github.com/Rust-SDL2/rust-sdl2/pull/791
@@ -102,79 +102,37 @@ impl Display for GameStep {
 }
 
 /// Errors which may occur in SDL.
-// #[derive(Debug, Clone, PartialEq, Fail)]
-#[derive(Debug, PartialEq, Fail)]
-pub enum ErrorKind {
+#[derive(Debug, Error)]
+pub enum SdlError {
     /// An error from SDL itself.
-    #[fail(display = "an error from SDL: {}", _0)]
+    #[error("an error from SDL: {}", _0)]
     Sdl(String),
     /// An error from the audio subsystem.
-    #[fail(display = "an error from the audio subsystem: {}", _0)]
+    #[error("an error from the audio subsystem: {}", _0)]
     Audio(String),
     /// An error from the video subsystem.
-    #[fail(display = "an error from the video subsystem: {}", _0)]
+    #[error("an error from the video subsystem: {}", _0)]
     Video(VideoStep),
     /// An error from the main loop and game itself.
-    #[fail(display = "an error from the main loop and game itself: {}", _0)]
-    Mainloop(GameStep),
+    #[error("an error from the main loop and game itself: {}", step)]
+    Mainloop {
+        /// The step which had the error.
+        step: GameStep,
+        /// The error which occurred.
+        source: Box<dyn Error + Send + Sync>,
+    },
 }
 
-impl From<VideoStep> for ErrorKind {
-    fn from(step: VideoStep) -> Self {
-        ErrorKind::Video(step)
-    }
-}
-
-impl From<GameStep> for ErrorKind {
-    fn from(step: GameStep) -> Self {
-        ErrorKind::Mainloop(step)
-    }
-}
-
-/// An error from SDL.
-#[derive(Debug)]
-pub struct Error {
-    inner: Context<ErrorKind>,
-}
-
-/// A result alias for SDL results.
-pub type Result<T> = StdResult<T, Error>;
-
-impl Fail for Error {
-    fn cause(&self) -> Option<&dyn Fail> {
-        self.inner.cause()
-    }
-
-    fn backtrace(&self) -> Option<&Backtrace> {
-        self.inner.backtrace()
-    }
-}
-
-impl Display for Error {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        Display::fmt(&self.inner, f)
-    }
-}
-
-impl Error {
-    /// The kind of the error.
-    pub fn kind(&self) -> &ErrorKind {
-        self.inner.get_context()
-    }
-}
-
-impl From<ErrorKind> for Error {
-    fn from(kind: ErrorKind) -> Self {
-        Self {
-            inner: Context::new(kind),
+impl SdlError {
+    pub(crate) fn mainloop<E>(step: GameStep, source: E) -> Self
+    where
+        E: Error + Send + Sync + 'static,
+    {
+        SdlError::Mainloop {
+            step,
+            source: Box::new(source),
         }
     }
 }
 
-impl From<Context<ErrorKind>> for Error {
-    fn from(inner: Context<ErrorKind>) -> Self {
-        Self {
-            inner: inner,
-        }
-    }
-}
+pub(crate) type SdlResult<T> = Result<T, SdlError>;
