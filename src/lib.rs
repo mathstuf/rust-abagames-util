@@ -24,8 +24,10 @@ mod crates {
     pub extern crate directories;
     pub extern crate mersenne_twister;
     pub extern crate rand;
+    pub extern crate rodio;
 }
 
+mod audio;
 mod math;
 mod paths;
 mod pool;
@@ -33,6 +35,7 @@ mod rand;
 mod sdl;
 mod slice;
 
+pub use audio::*;
 pub use math::*;
 pub use paths::*;
 pub use pool::*;
