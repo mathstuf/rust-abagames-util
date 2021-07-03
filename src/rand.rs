@@ -2,7 +2,7 @@
 // See accompanying LICENSE file for details.
 
 use chrono::Utc;
-use rand_core::{RngCore, SeedableRng};
+use rand_core::SeedableRng;
 use rand_mt::Mt19937GenRand32;
 
 /// Seedable and repeatable source of random numbers.
