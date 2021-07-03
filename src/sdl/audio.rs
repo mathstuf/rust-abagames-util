@@ -72,7 +72,7 @@ impl<'a> AudioData<'a> {
 
     /// Play queued sound effects.
     fn play_sfx(&mut self) -> bool {
-        let sfx_to_play = mem::replace(&mut self.queued_sfx, HashSet::new());
+        let sfx_to_play = mem::take(&mut self.queued_sfx);
 
         sfx_to_play
             .iter()
