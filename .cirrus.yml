@@ -23,7 +23,7 @@ linux_task:
       image: rust:latest
     matrix:
         - env:
-              RUSTVER: 1.40.0
+              RUSTVER: 1.47
         - env:
               RUSTVER: stable
         - allow_failures: true
