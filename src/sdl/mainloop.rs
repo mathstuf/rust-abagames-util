@@ -135,9 +135,8 @@ impl<'a> MainLoop<'a> {
 
             let step_result = (0..frames)
                 .map(|_| {
-                    Ok(game
-                        .step(&input)
-                        .map_err(|err| SdlError::mainloop(GameStep::StepGame, err))?)
+                    game.step(&input)
+                        .map_err(|err| SdlError::mainloop(GameStep::StepGame, err))
                 })
                 .collect::<SdlResult<Vec<_>>>()?
                 .into_iter()
