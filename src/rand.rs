@@ -124,7 +124,7 @@ mod test {
         });
         (0..100).into_iter().for_each(|_| {
             println!("\nrand.next_real()...");
-            assert!(verify_rand(|| rand.next_real(), |f| 0. <= f && f < 1.))
+            assert!(verify_rand(|| rand.next_real(), |f| (0. ..1.).contains(&f)))
         });
         (0..100).into_iter().map(|n: usize| n as f32).for_each(|n| {
             println!("\nrand.next_float({:?})...", n);
