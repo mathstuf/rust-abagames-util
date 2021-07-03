@@ -119,7 +119,7 @@ mod test {
                 |i| {
                     let n = n as i32;
                     -n <= i && i <= n
-                }
+                },
             ))
         });
         (0..100).into_iter().for_each(|_| {
@@ -130,14 +130,14 @@ mod test {
             println!("\nrand.next_float({:?})...", n);
             assert!(verify_rand(
                 || rand.next_float(n),
-                |f| (0. <= f && f < n) || n == 0.
+                |f| (0. <= f && f < n) || n == 0.,
             ))
         });
         (0..100).into_iter().map(|n: usize| n as f32).for_each(|n| {
             println!("\nrand.next_float_signed({:?})...", n);
             assert!(verify_rand(
                 || rand.next_float_signed(n),
-                |f| (-n <= f && f < n) || n == 0.
+                |f| (-n <= f && f < n) || n == 0.,
             ))
         });
     }
@@ -152,31 +152,31 @@ mod test {
 
         assert_eq!(
             run_rand(|| rand_0.next_u32()),
-            run_rand(|| rand_1.next_u32())
+            run_rand(|| rand_1.next_u32()),
         );
         assert_eq!(
             run_rand(|| rand_0.next_int(10)),
-            run_rand(|| rand_1.next_int(10))
+            run_rand(|| rand_1.next_int(10)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_int(200)),
-            run_rand(|| rand_1.next_int(200))
+            run_rand(|| rand_1.next_int(200)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_int_signed(200)),
-            run_rand(|| rand_1.next_int_signed(200))
+            run_rand(|| rand_1.next_int_signed(200)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_real()),
-            run_rand(|| rand_1.next_real())
+            run_rand(|| rand_1.next_real()),
         );
         assert_eq!(
             run_rand(|| rand_0.next_float(0.2)),
-            run_rand(|| rand_1.next_float(0.2))
+            run_rand(|| rand_1.next_float(0.2)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_float_signed(-0.4)),
-            run_rand(|| rand_1.next_float_signed(-0.4))
+            run_rand(|| rand_1.next_float_signed(-0.4)),
         );
     }
 }
