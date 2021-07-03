@@ -2,7 +2,7 @@
 // See accompanying LICENSE file for details.
 
 use chrono::Utc;
-use rand_core::{RngCore, SeedableRng};
+use rand_core::SeedableRng;
 use rand_mt::Mt19937GenRand32;
 
 /// Seedable and repeatable source of random numbers.
@@ -108,46 +108,38 @@ mod test {
         println!("seed: {}", seed);
         rand.set_seed(seed);
 
-        (0..100)
-            .into_iter()
-            .inspect(|n| println!("\nrand.next_int({:?})...", n))
-            .for_each(|n| assert!(verify_rand(|| rand.next_int(n), |i| i < n || n == 0)));
-        (0..100)
-            .into_iter()
-            .inspect(|n| println!("\nrand.next_int_signed({:?})...", n))
-            .for_each(|n| {
-                assert!(verify_rand(
-                    || rand.next_int_signed(n),
-                    |i| {
-                        let n = n as i32;
-                        -n <= i && i <= n
-                    }
-                ))
-            });
-        (0..100)
-            .into_iter()
-            .inspect(|_| println!("\nrand.next_real()..."))
-            .for_each(|_| assert!(verify_rand(|| rand.next_real(), |f| 0. <= f && f < 1.)));
-        (0..100)
-            .into_iter()
-            .map(|n: usize| n as f32)
-            .inspect(|n| println!("\nrand.next_float({:?})...", n))
-            .for_each(|n| {
-                assert!(verify_rand(
-                    || rand.next_float(n),
-                    |f| (0. <= f && f < n) || n == 0.
-                ))
-            });
-        (0..100)
-            .into_iter()
-            .map(|n: usize| n as f32)
-            .inspect(|n| println!("\nrand.next_float_signed({:?})...", n))
-            .for_each(|n| {
-                assert!(verify_rand(
-                    || rand.next_float_signed(n),
-                    |f| (-n <= f && f < n) || n == 0.
-                ))
-            });
+        (0..100).into_iter().for_each(|n| {
+            println!("\nrand.next_int({:?})...", n);
+            assert!(verify_rand(|| rand.next_int(n), |i| i < n || n == 0))
+        });
+        (0..100).into_iter().for_each(|n| {
+            println!("\nrand.next_int_signed({:?})...", n);
+            assert!(verify_rand(
+                || rand.next_int_signed(n),
+                |i| {
+                    let n = n as i32;
+                    -n <= i && i <= n
+                },
+            ))
+        });
+        (0..100).into_iter().for_each(|_| {
+            println!("\nrand.next_real()...");
+            assert!(verify_rand(|| rand.next_real(), |f| (0. ..1.).contains(&f)))
+        });
+        (0..100).into_iter().map(|n: usize| n as f32).for_each(|n| {
+            println!("\nrand.next_float({:?})...", n);
+            assert!(verify_rand(
+                || rand.next_float(n),
+                |f| (0. <= f && f < n) || n == 0.,
+            ))
+        });
+        (0..100).into_iter().map(|n: usize| n as f32).for_each(|n| {
+            println!("\nrand.next_float_signed({:?})...", n);
+            assert!(verify_rand(
+                || rand.next_float_signed(n),
+                |f| (-n <= f && f < n) || n == 0.,
+            ))
+        });
     }
 
     #[test]
@@ -160,31 +152,31 @@ mod test {
 
         assert_eq!(
             run_rand(|| rand_0.next_u32()),
-            run_rand(|| rand_1.next_u32())
+            run_rand(|| rand_1.next_u32()),
         );
         assert_eq!(
             run_rand(|| rand_0.next_int(10)),
-            run_rand(|| rand_1.next_int(10))
+            run_rand(|| rand_1.next_int(10)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_int(200)),
-            run_rand(|| rand_1.next_int(200))
+            run_rand(|| rand_1.next_int(200)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_int_signed(200)),
-            run_rand(|| rand_1.next_int_signed(200))
+            run_rand(|| rand_1.next_int_signed(200)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_real()),
-            run_rand(|| rand_1.next_real())
+            run_rand(|| rand_1.next_real()),
         );
         assert_eq!(
             run_rand(|| rand_0.next_float(0.2)),
-            run_rand(|| rand_1.next_float(0.2))
+            run_rand(|| rand_1.next_float(0.2)),
         );
         assert_eq!(
             run_rand(|| rand_0.next_float_signed(-0.4)),
-            run_rand(|| rand_1.next_float_signed(-0.4))
+            run_rand(|| rand_1.next_float_signed(-0.4)),
         );
     }
 }

@@ -9,7 +9,7 @@ homepage = "https://github.com/mathstuf/rust-abagames-util"
 edition = "2018"
 
 [dependencies]
-cgmath = "~0.17"
+cgmath = "~0.18"
 gfx = "~0.18"
 gfx_device_gl = "~0.16"
 gfx_window_sdl = "~0.9"
@@ -17,7 +17,7 @@ rayon = "^1.0"
 sdl2 = { version = "~0.32", features = ["mixer"] }
 
 chrono = "~0.4"
-directories = "^2.0"
-rand_core = "~0.5"
-rand_mt = "^3.0"
+directories = "^3.0"
+rand_core = "~0.6"
+rand_mt = "^4.0"
 thiserror = "^1.0"
